@@ -67,10 +67,13 @@ struct RxPacket
 
 void appMain() {
   struct RxPacket rxPacket;
-  Command command = handleCommunication(&rxPacket);
-  if(command == IDENTIFY_CMD){
-    ledSetAll();
-  }
+  while (true)
+  {
+    Command command = handleCommunication(&rxPacket);
+    if(command == IDENTIFY_CMD){
+      ledSetAll();
+    }
+  }  
 }
 
 Command handleCommunication(struct RxPacket *rxPacket)
