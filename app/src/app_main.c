@@ -48,17 +48,36 @@
 #include "app_channel.h"
 #include "system.h"
 
+#define DEBUG_MODULE APP_MAIN
 
-#define DEBUG_MODULE "APPAPI"
+typedef enum
+{
+  TAKE_OFF_CMD = 0,
+  LAND_CMD,
+  START_EXPLORATION_CMD,
+  RETURN_TO_BASE_CMD,
+  IDENTIFY_CMD,
+  UNKNOWN_CMD,
+} Command;
+
+struct RxPacket
+{
+  uint16_t command;
+} __attribute__((packed));
 
 void appMain() {
-  // LED sequencer
-  {
-    ledseqContext_t ledSeqContext;
-    ledseqRegisterSequence(&ledSeqContext);
-    ledseqRun(&ledSeqContext);
-    ledseqRunBlocking(&ledSeqContext);
-    ledseqStop(&ledSeqContext);
-    ledseqStopBlocking(&ledSeqContext);
+  struct RxPacket rxPacket;
+  Command command = handleCommunication(&rxPacket);
+  if(command == IDENTIFY_CMD){
+    ledSetAll();
   }
+}
+
+Command handleCommunication(struct RxPacket *rxPacket)
+{
+    const int numberOfCommand = 5;
+    if (appchannelReceivePacket(rxPacket, sizeof(struct RxPacket), APPCHANNEL_WAIT_FOREVER))
+    {
+        return rxPacket->command < numberOfCommand ?  rxPacket->command : UNKNOWN_CMD;
+    }
 }
