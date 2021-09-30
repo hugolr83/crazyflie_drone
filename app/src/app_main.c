@@ -27,6 +27,7 @@
  */
 
 
+#include <unistd.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -50,8 +51,7 @@
 
 #define DEBUG_MODULE APP_MAIN
 
-typedef enum
-{
+typedef enum {
   TAKE_OFF_CMD = 0,
   LAND_CMD,
   START_EXPLORATION_CMD,
@@ -60,27 +60,35 @@ typedef enum
   UNKNOWN_CMD,
 } Command;
 
-struct RxPacket
-{
+struct RxPacket {
   uint16_t command;
 } __attribute__((packed));
 
-void appMain() {
-  struct RxPacket rxPacket;
-  while (true)
-  {
-    Command command = handleCommunication(&rxPacket);
-    if(command == IDENTIFY_CMD){
-      ledSetAll();
+static const unsigned NUMBER_OF_FLASH = 10;
+static const TickType_t FLASH_DELAY = 250;
+
+void flashLed() {
+    // This would need to be moved to its own low priority task that would block on notification from the other
+    // task, but it is not needed for now
+    for (unsigned i = 0; i < NUMBER_OF_FLASH; i++) {
+        ledSetAll();
+        vTaskDelay(FLASH_DELAY);
+        ledClearAll();
+        vTaskDelay(FLASH_DELAY);
     }
-  }  
 }
 
-Command handleCommunication(struct RxPacket *rxPacket)
-{
-    const int numberOfCommand = 5;
-    if (appchannelReceivePacket(rxPacket, sizeof(struct RxPacket), APPCHANNEL_WAIT_FOREVER))
-    {
-        return rxPacket->command < numberOfCommand ?  rxPacket->command : UNKNOWN_CMD;
+Command handleCommunication(struct RxPacket *rxPacket) {
+    appchannelReceivePacket(rxPacket, sizeof(struct RxPacket), APPCHANNEL_WAIT_FOREVER);
+    return rxPacket->command < UNKNOWN_CMD && rxPacket->command >= TAKE_OFF_CMD ? rxPacket->command : UNKNOWN_CMD;
+}
+
+_Noreturn void appMain() {
+  struct RxPacket rxPacket;
+  while (true) {
+    Command command = handleCommunication(&rxPacket);
+    if (command == IDENTIFY_CMD) {
+        flashLed();
     }
+  }  
 }
