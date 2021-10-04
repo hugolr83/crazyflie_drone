@@ -11,13 +11,12 @@ stages:
   - build
   - release
   - export_version
- # - build_and_push_firwmare
+  - push_firmare
 
 build:
   stage: build
   image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/ci:0.0.3
   only: *main_and_mr
-  except: *release
   script:
     - cd app
     - make
@@ -49,7 +48,16 @@ export_version:
   image: node:lts-bullseye-slim
   only: *release
   script:
-    - echo "SIMULATION_VERSION=$(node -pe "require('./package.json').version")" >> export_version.env
+    - echo "FIRMWARE_VERSION=$(node -pe "require('./package.json').version")" >> export_version.env
   artifacts:
     reports:
       dotenv: export_version.env
+
+push_firwmare:
+  stage: push_firmare
+  image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-backend/schema-fetcher:0.0.1
+  only: *release
+  script:
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin"'
+  dependencies:
+    - build
