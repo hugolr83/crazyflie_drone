@@ -56,7 +56,7 @@ export_version:
 push_firwmare:
   stage: push_firmare
   image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/curl:0.0.2
-  only: *main_and_mr
+  only: *release
   variables:
     FIRMWARE_VERSION: "1.0.1"
     PUSH_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin
