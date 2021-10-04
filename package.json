@@ -1,6 +1,6 @@
 {
   "name": "crazyflie",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "devDependencies": {
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/gitlab": "^7.0.3",
