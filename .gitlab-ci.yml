@@ -55,9 +55,12 @@ export_version:
 
 push_firwmare:
   stage: push_firmare
-  image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/curl:0.0.1
-  only: *release
+  image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/curl:0.0.2
+  only: *main_and_mr
+  variables:
+    PUSH_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin
   script:
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin"'
+    - echo $PUSH_URL
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_UR} | jq'
   dependencies:
     - build
