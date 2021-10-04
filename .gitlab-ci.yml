@@ -61,6 +61,6 @@ push_firwmare:
     PUSH_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin
   script:
     - echo $PUSH_URL
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_UR} | jq'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_URL} | jq'
   dependencies:
     - build
