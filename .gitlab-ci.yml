@@ -64,3 +64,4 @@ push_firwmare:
     - 'echo $(curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_URL} | jq)'
   dependencies:
     - build
+    - export_version
