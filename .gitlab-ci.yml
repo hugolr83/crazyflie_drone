@@ -58,9 +58,10 @@ push_firwmare:
   image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/curl:0.0.2
   only: *main_and_mr
   variables:
+    FIRMWARE_VERSION: "1.0.1"
     PUSH_URL: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/firmware/${FIRMWARE_VERSION}/cf2.bin
   script:
     - echo $PUSH_URL
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_URL} | jq'
+    - 'echo $(curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file app/cf2.bin ${PUSH_URL} | jq)'
   dependencies:
     - build
