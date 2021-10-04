@@ -15,7 +15,7 @@ stages:
 
 build:
   stage: build
-  image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/ci:0.0.2
+  image: registry.gitlab.com/polytechnique-montr-al/inf3995/20213/equipe-100/inf3995-crazyflie/ci:0.0.3
   only: *main_and_mr
   except: *release
   script:
