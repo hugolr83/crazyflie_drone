@@ -46,25 +46,11 @@
 #include "log.h"
 #include "param.h"
 #include "pm.h"
-#include "app_channel.h"
 #include "system.h"
+#include "communication_unit.h"
 
-#define DEBUG_MODULE APP_MAIN
 
-typedef enum {
-  TAKE_OFF_CMD = 0,
-  LAND_CMD,
-  START_EXPLORATION_CMD,
-  RETURN_TO_BASE_CMD,
-  IDENTIFY_CMD,
-  UNKNOWN_CMD,
-} Command;
-
-struct RxPacket {
-  uint16_t command;
-} __attribute__((packed));
-
-static const unsigned NUMBER_OF_FLASH = 10;
+static const unsigned NUMBER_OF_FLASH = 1;
 static const TickType_t FLASH_DELAY = 250;
 
 void flashLed() {
@@ -78,15 +64,11 @@ void flashLed() {
     }
 }
 
-Command handleCommunication(struct RxPacket *rxPacket) {
-    appchannelReceivePacket(rxPacket, sizeof(struct RxPacket), APPCHANNEL_WAIT_FOREVER);
-    return rxPacket->command < UNKNOWN_CMD && rxPacket->command >= TAKE_OFF_CMD ? rxPacket->command : UNKNOWN_CMD;
-}
+
 
 _Noreturn void appMain() {
-  struct RxPacket rxPacket;
   while (true) {
-    Command command = handleCommunication(&rxPacket);
+    Command command = readCommand();
     if (command == IDENTIFY_CMD) {
         flashLed();
     }
