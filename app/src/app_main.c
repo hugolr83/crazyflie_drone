@@ -33,14 +33,19 @@
 #include <stdbool.h>
 
 #include "app.h"
-
+#include "log.h"
+#include "battery.h"
 #include "stateMachine.h"
 
 void appMain() {
   while (true) {
+    updateBatteryPercentage();
     Command command = readCommand();
     handleCommand(command);
     vTaskDelay(10);
   }  
 }
 
+LOG_GROUP_START(drone)
+LOG_ADD(LOG_UINT16, batteryLevel, &batteryLevela)
+LOG_GROUP_STOP(drone)
