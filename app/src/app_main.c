@@ -34,43 +34,13 @@
 
 #include "app.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
+#include "stateMachine.h"
 
-#include "debug.h"
-
-#include "ledseq.h"
-#include "crtp_commander_high_level.h"
-#include "locodeck.h"
-#include "mem.h"
-#include "log.h"
-#include "param.h"
-#include "pm.h"
-#include "system.h"
-#include "communication_unit.h"
-
-
-static const unsigned NUMBER_OF_FLASH = 1;
-static const TickType_t FLASH_DELAY = 250;
-
-void flashLed() {
-    // This would need to be moved to its own low priority task that would block on notification from the other
-    // task, but it is not needed for now
-    for (unsigned i = 0; i < NUMBER_OF_FLASH; i++) {
-        ledSetAll();
-        vTaskDelay(FLASH_DELAY);
-        ledClearAll();
-        vTaskDelay(FLASH_DELAY);
-    }
-}
-
-
-
-_Noreturn void appMain() {
+void appMain() {
   while (true) {
     Command command = readCommand();
-    if (command == IDENTIFY_CMD) {
-        flashLed();
-    }
+    handleCommand(command);
+    vTaskDelay(10);
   }  
 }
+

@@ -1,3 +1,5 @@
+#ifndef SRC_MODELS_H_
+#define SRC_MODELS_H_
 #include <stdint.h>
 
 typedef enum {
@@ -12,3 +14,5 @@ typedef enum {
 typedef struct rxPacket_s {
   uint16_t command;
 } __attribute__((packed)) rxPacket_t;
+
+#endif

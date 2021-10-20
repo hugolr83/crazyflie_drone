@@ -3,6 +3,8 @@
 #include "models.h"
 #include "app_channel.h"
 
+extern Command lastCommand;
+
 Command readCommand();
 
 #endif
