@@ -11,8 +11,8 @@ typedef enum {
   UNKNOWN_CMD,
 } Command;
 
-typedef struct rxPacket_s {
+typedef struct RxPacket_s {
   uint16_t command;
-} __attribute__((packed)) rxPacket_t;
+} __attribute__((packed)) RxPacket_t;
 
 #endif
