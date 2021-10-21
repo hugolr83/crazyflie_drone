@@ -34,18 +34,27 @@
 
 #include "app.h"
 #include "log.h"
-#include "battery.h"
+#include "sensors_unit.h"
 #include "stateMachine.h"
+#include "communication_unit.h"
+#define STATE_MACHINE_COMMANDER_PRI 3
+
+
 
 void appMain() {
+
   while (true) {
-    updateBatteryPercentage();
     Command command = readCommand();
-    handleCommand(command);
+    updateSensorsData();
+    handleCommand(command, lastCommand);
+    lastCommand = command;
+    commanderSetSetpoint(&setpoint, STATE_MACHINE_COMMANDER_PRI);
     vTaskDelay(10);
   }  
+  
 }
 
 LOG_GROUP_START(drone)
-LOG_ADD(LOG_UINT16, batteryLevel, &batteryLevela)
+LOG_ADD(LOG_INT32, batteryLevel, &sensorsData.batteryLevel)
 LOG_GROUP_STOP(drone)
+
