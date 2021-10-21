@@ -1,5 +1,4 @@
 #include "battery.h"
-int batteryLevela = 0;
 
 const float voltageCapacities[] = {
     4.20F, // 100 %
@@ -26,9 +25,9 @@ const float voltageCapacities[] = {
 };
 
 
-void updateBatteryPercentage(){
+int getBatteryPercentage(){
     double voltage = pmGetBatteryVoltage();
-    batteryLevela = fromVoltageToPercentage(voltage);
+    return fromVoltageToPercentage(voltage);
 }
 
 int fromVoltageToPercentage(double voltage)

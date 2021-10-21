@@ -3,9 +3,7 @@
 #include "pm.h"
 #include <stdint.h>
 
-extern int batteryLevela;
-
-void updateBatteryPercentage();
+int getBatteryPercentage();
 int fromVoltageToPercentage(double voltage);
 
 #endif
