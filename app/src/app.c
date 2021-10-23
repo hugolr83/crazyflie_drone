@@ -55,6 +55,6 @@ void appMain() {
 }
 
 LOG_GROUP_START(drone)
-LOG_ADD(LOG_INT32, batteryLevel, &sensorsData.batteryLevel)
+LOG_ADD(LOG_UINT8, batteryLevel, &sensorsData.batteryLevel)
 LOG_GROUP_STOP(drone)
 
