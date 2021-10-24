@@ -1,4 +1,5 @@
-
+#ifndef SRC_SENSORSUNIT_H_
+#define SRC_SENSORSUNIT_H_
 #include "stabilizer_types.h"
 #include "estimator_kalman.h"
 #include "range.h"
@@ -23,3 +24,5 @@ extern sensorsData_t sensorsData;
 
 void updateSensorsData();
 void initSensorsData();
+
+#endif
