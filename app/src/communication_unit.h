@@ -5,6 +5,6 @@
 
 extern command_t lastCommand;
 
-command_t readCommand();
+void readCommand();
 
 #endif
