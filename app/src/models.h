@@ -9,10 +9,10 @@ typedef enum {
   RETURN_TO_BASE_CMD,
   IDENTIFY_CMD,
   UNKNOWN_CMD,
-} Command;
+} command_t;
 
-typedef struct RxPacket_s {
+typedef struct {
   uint16_t command;
-} __attribute__((packed)) RxPacket_t;
+} __attribute__((packed)) rxPacket_t;
 
 #endif

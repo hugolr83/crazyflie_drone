@@ -6,14 +6,14 @@
 #include <stdlib.h>
 
 
-typedef struct range_s{
+typedef struct {
     float front;
     float back;
     float left;
     float right;
 } range_t;
 
-typedef struct sensorsData_s {
+typedef struct {
     point_t position;
     range_t range;
     int batteryLevel;

@@ -35,7 +35,7 @@
 #include "app.h"
 #include "log.h"
 #include "sensors_unit.h"
-#include "stateMachine.h"
+#include "state_control.h"
 #include "communication_unit.h"
 #define STATE_MACHINE_COMMANDER_PRI 3
 
@@ -44,7 +44,7 @@
 void appMain() {
 
   while (true) {
-    Command command = readCommand();
+    command_t command = readCommand();
     updateSensorsData();
     handleCommand(command, lastCommand);
     lastCommand = command;
