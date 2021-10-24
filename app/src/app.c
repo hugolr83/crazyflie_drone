@@ -37,6 +37,7 @@
 #include "sensors_unit.h"
 #include "state_control.h"
 #include "communication_unit.h"
+#include "state_machine.h"
 #define STATE_MACHINE_COMMANDER_PRI 3
 
 
@@ -44,10 +45,13 @@
 void appMain() {
 
   while (true) {
-    command_t command = readCommand();
+    readCommand();
     updateSensorsData();
-    handleCommand(command, lastCommand);
-    lastCommand = command;
+    handleCommand(&lastCommand);
+    
+    setNextState();
+    executeState();
+
     commanderSetSetpoint(&setpoint, STATE_MACHINE_COMMANDER_PRI);
     vTaskDelay(10);
   }  
