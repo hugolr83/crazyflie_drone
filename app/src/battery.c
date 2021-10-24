@@ -48,5 +48,6 @@ int fromVoltageToPercentage(double voltage)
     charge ++;
   }
 
-  return charge * 5;
+  const int batteryLevelIncrement = 5;
+  return charge * batteryLevelIncrement;
 }
