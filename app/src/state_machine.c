@@ -1,5 +1,10 @@
 #include "stateMachine.h"
 
+
+
+
+
+
 void handleCommand(Command command, Command lastCommand){
     if (command == IDENTIFY_CMD && lastCommand != IDENTIFY_CMD) {
         flashLedApp();
