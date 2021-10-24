@@ -2,3 +2,4 @@ bin/*
 cf2.*
 tools/*
 version.c
+*.svd
