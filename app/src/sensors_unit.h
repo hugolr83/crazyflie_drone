@@ -23,6 +23,5 @@ typedef struct {
 extern sensorsData_t sensorsData;
 
 void updateSensorsData();
-void initSensorsData();
 
 #endif

@@ -49,8 +49,7 @@ void appMain() {
     updateSensorsData();
     handleCommand(&lastCommand);
     
-    setNextState();
-    executeState();
+    stateMachineStep();
 
     commanderSetSetpoint(&setpoint, STATE_MACHINE_COMMANDER_PRI);
     vTaskDelay(10);
