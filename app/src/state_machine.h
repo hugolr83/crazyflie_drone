@@ -21,10 +21,6 @@ typedef enum
 
 extern state_fsm_t state;
 
-
-
-void setNextState();
-void executeState();
-
+void stateMachineStep();
 
 #endif

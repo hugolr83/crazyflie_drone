@@ -3,7 +3,7 @@
 state_fsm_t state = NOT_READY;
 
 
-void setNextState(){
+static void setNextState(){
     switch (state)
     {
         case (NOT_READY) : {
@@ -60,8 +60,7 @@ void setNextState(){
 
 }
 
-
-void executeState(){
+static void executeState(){
 
     switch (state)
     {
@@ -93,4 +92,9 @@ void executeState(){
         default:
             break;
     }
+}
+
+void stateMachineStep(){
+    setNextState();
+    executeState();
 }
