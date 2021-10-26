@@ -25,12 +25,12 @@ const uint8_t rssi_collision_threshold = 50; // normal batteris 43/45/45/46 bigg
 
 
 static void setNextState(float* wanted_angle_dir, float current_heading, int state, 
-                  float front_range, float left_range, float right_range, float back_range,
+                  range_t range,
                   float* direction, float current_pos_x, float current_pos_y, bool priority,
                   uint8_t rssi_inter, bool outbound, float rssi_angle_inter, int state_wf, 
                   uint8_t rssi_beacon);
 static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
-                  float front_range, float left_range, float right_range, float back_range,
+                  range_t range,
                   float current_heading, float wanted_angle_dir, int direction, int state_wf);
 
 
@@ -61,7 +61,7 @@ void init_SGBA_controller(float new_ref_distance_from_wall, float max_speed_ref,
 
 
 int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle, int *state_wallfollowing,
-                                 float front_range, float left_range, float right_range, float back_range,
+                                 range_t range,
                                  float current_heading, float current_pos_x, float current_pos_y, uint8_t rssi_beacon,
                                  uint8_t rssi_inter, float rssi_angle_inter, bool priority, bool outbound)
 {
@@ -74,12 +74,12 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
   static float direction = 1;
   
   setNextState(&wanted_angle_dir, current_heading, state,
-                front_range, left_range, right_range, back_range,
+                range,
                 &direction, current_pos_x, current_pos_y, priority, 
                 rssi_inter, outbound, rssi_angle_inter, state_wf, rssi_beacon);
   
   executeState(state, vel_x, vel_y, vel_w, rssi_angle, state_wallfollowing, 
-                front_range, left_range, right_range, back_range,
+                range,
                 current_heading, wanted_angle_dir, direction, state_wf);
                 
   return state;
@@ -88,7 +88,7 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
 
 
 static void setNextState(float* wanted_angle_dir, float current_heading, int state, 
-                  float front_range, float left_range, float right_range, float back_range,
+                  range_t range,
                   float* direction, float current_pos_x, float current_pos_y, bool priority,
                   uint8_t rssi_inter, bool outbound, float rssi_angle_inter, int state_wf, 
                   uint8_t rssi_beacon)
@@ -147,19 +147,19 @@ static void setNextState(float* wanted_angle_dir, float current_heading, int sta
 
   //FORWARD
   if (state == 1) {     
-    if (front_range < ref_distance_from_wall + 0.2f) {
+    if (range.front < ref_distance_from_wall + 0.2f) {
 
     // if looping is detected, reverse direction (only on outbound)
       if (overwrite_and_reverse_direction) {
         *direction = -1.0f * *direction;
         overwrite_and_reverse_direction = false;
       } else {
-        if (left_range < right_range && left_range < 2.0f) {
+        if (range.left < range.right && range.left < 2.0f) {
           *direction = -1.0f;
-        } else if (left_range > right_range && right_range < 2.0f) {
+        } else if (range.left > range.right && range.right < 2.0f) {
           *direction = 1.0f;
 
-        } else if (left_range > 2.0f && right_range > 2.0f) {
+        } else if (range.left > 2.0f && range.right > 2.0f) {
           *direction = 1.0f;
         } else {
 
@@ -184,7 +184,7 @@ static void setNextState(float* wanted_angle_dir, float current_heading, int sta
   if (state == 2) { 
     // check if heading is close to the preferred_angle
     bool goal_check = logicIsCloseTo(wraptopi(current_heading - wanted_angle), 0, 0.1f);
-    if (front_range < ref_distance_from_wall + 0.2f) {
+    if (range.front < ref_distance_from_wall + 0.2f) {
       cannot_go_to_goal =  true;
       wall_follower_init(0.4, 0.5, 3);
 
@@ -250,7 +250,7 @@ static void setNextState(float* wanted_angle_dir, float current_heading, int sta
 
     // if during wallfollowing, agent goes around wall, and heading is close to rssi _angle
     //      got to rotate to goal
-    if ((state_wf == 6 || state_wf == 8) && goal_check_WF && front_range > ref_distance_from_wall + 0.4f
+    if ((state_wf == 6 || state_wf == 8) && goal_check_WF && range.front > ref_distance_from_wall + 0.4f
         && !cannot_go_to_goal) {
       *wanted_angle_dir = wraptopi(current_heading - wanted_angle); // to determine the direction when turning to goal
       state = transition(2); //rotate_to_goal
@@ -309,7 +309,7 @@ static void setNextState(float* wanted_angle_dir, float current_heading, int sta
 
 
 static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
-                  float front_range, float left_range, float right_range, float back_range,
+                  range_t range,
                   float current_heading, float wanted_angle_dir, int direction, int state_wf){
   /***********************************************************
    * Handle state actions
@@ -323,10 +323,10 @@ static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  f
   if (state == 1) {        
     // stop moving if there is another drone in the way
     // forward max speed
-    if (left_range < ref_distance_from_wall) {
+    if (range.left < ref_distance_from_wall) {
       temp_vel_y = -0.2f;
     }
-    if (right_range < ref_distance_from_wall) {
+    if (range.right < ref_distance_from_wall) {
       temp_vel_y = 0.2f;
     }
     temp_vel_x = 0.5;
@@ -349,9 +349,9 @@ static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  f
   if (state == 3) {       
     //Get the values from the wallfollowing
     if (direction == -1) {
-      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, front_range, left_range, current_heading, direction);
+      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.left, current_heading, direction);
     } else {
-      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, front_range, right_range, current_heading, direction);
+      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.right, current_heading, direction);
     }
   } 
 
@@ -359,16 +359,16 @@ static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  f
   if (state == 4) {      
 
     float save_distance = 0.7f;
-    if (left_range < save_distance) {
+    if (range.left < save_distance) {
       temp_vel_y = temp_vel_y - 0.5f;
     }
-    if (right_range < save_distance) {
+    if (range.right < save_distance) {
       temp_vel_y = temp_vel_y + 0.5f;
     }
-    if (front_range < save_distance) {
+    if (range.front < save_distance) {
       temp_vel_x = temp_vel_x - 0.5f;
     }
-    if (back_range < save_distance) {
+    if (range.back < save_distance) {
       temp_vel_x = temp_vel_x + 0.5f;
     }
 
