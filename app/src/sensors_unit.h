@@ -1,4 +1,5 @@
-
+#ifndef SRC_SENSORSUNIT_H_
+#define SRC_SENSORSUNIT_H_
 #include "stabilizer_types.h"
 #include "estimator_kalman.h"
 #include "range.h"
@@ -6,14 +7,14 @@
 #include <stdlib.h>
 
 
-typedef struct range_s{
+typedef struct {
     float front;
     float back;
     float left;
     float right;
 } range_t;
 
-typedef struct sensorsData_s {
+typedef struct {
     point_t position;
     range_t range;
     int batteryLevel;
@@ -22,4 +23,5 @@ typedef struct sensorsData_s {
 extern sensorsData_t sensorsData;
 
 void updateSensorsData();
-void initSensorsData();
+
+#endif

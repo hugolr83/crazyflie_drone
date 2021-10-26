@@ -4,6 +4,5 @@
 #include <stdint.h>
 
 int getBatteryPercentage();
-int fromVoltageToPercentage(double voltage);
 
 #endif

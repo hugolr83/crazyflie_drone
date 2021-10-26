@@ -25,12 +25,7 @@ const float voltageCapacities[] = {
 };
 
 
-int getBatteryPercentage(){
-    double voltage = pmGetBatteryVoltage();
-    return fromVoltageToPercentage(voltage);
-}
-
-int fromVoltageToPercentage(double voltage)
+static int fromVoltageToPercentage(double voltage)
 {
   int charge = 0;
   const int n = sizeof(voltageCapacities) / sizeof(float);
@@ -50,4 +45,10 @@ int fromVoltageToPercentage(double voltage)
 
   const int batteryLevelIncrement = 5;
   return charge * batteryLevelIncrement;
+}
+
+
+int getBatteryPercentage(){
+  double voltage = pmGetBatteryVoltage();
+  return fromVoltageToPercentage(voltage);
 }
