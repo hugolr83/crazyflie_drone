@@ -1,8 +1,8 @@
 /*
- * gradient_bug.c
+ * inspired from 
  *
- *  Created on: Aug 9, 2018
- *      Author: knmcguire
+ *  
+ *      
  */
 
 
@@ -10,63 +10,42 @@
 #include <errno.h>
 #include <math.h>
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "log.h"
-#include "param.h"
-#include "system.h"
-
-#include "commander.h"
-#include "sensors.h"
-#include "stabilizer_types.h"
-
-#include "estimator_kalman.h"
-#include "stabilizer.h"
-
-#include "wallfollowing_multiranger_onboard.h"
-#include "SGBA.h"
 #include "usec_time.h"
-#include "models.h"
-
-
-#include "range.h"
 #include "radiolink.h"
-#include "median_filter.h"
 #include "configblock.h"
 
-#include "SGBA_utils.h"
-
-
+#include "models.h"
+#include "sensors_unit.h"
+#include "SGBA.h"
+#include "median_filter.h"
 
 void p2pcallbackHandler(P2PPacket *p);
 
 
-static uint8_t rssi_inter_filtered;
-static uint8_t rssi_beacon_filtered;
-float rssi_angle_inter_closest;
+//  SGBA input
+static SGBA_init_t SGBA_init;
+static rssi_data_t rssi_data;
+static bool priority;
 
+
+// RSSI data received from other drones/beacon
 static uint8_t rssi_beacon;
-
 static uint8_t rssi_array_other_drones[9] = {150, 150, 150, 150, 150, 150, 150, 150, 150};
 static uint64_t time_array_other_drones[9] = {0};
 static float rssi_angle_array_other_drones[9] = {500.0f};
 
-static uint8_t id_inter_closest=100;
-
-static struct MedianFilterFloat medFilt;
+// Median filters
 static struct MedianFilterFloat medFilt_2;
 static struct MedianFilterFloat medFilt_3;
+
+
 static uint8_t my_id;
+
+// P2P communication
 static P2PPacket p_reply;
-
-
 static uint64_t radioSendBroadcastTime=0;
-// static uint64_t takeoffdelaytime = 0;
 
 void initOnlyOneTime(){
-    
-    init_median_filter_f(&medFilt, 5);
     
     init_median_filter_f(&medFilt_2, 5);
     
@@ -77,6 +56,9 @@ void initOnlyOneTime(){
 
     uint64_t address = configblockGetRadioAddress();
     my_id =(uint8_t)((address) & 0x00000000ff);
+
+
+    SGBA_init = getSGBAInitParam(my_id);
     
     p_reply.port=0x00;
     p_reply.data[0]=my_id;
@@ -84,7 +66,8 @@ void initOnlyOneTime(){
     p_reply.size=5;
 }
 
-void readEveryStep(){
+
+void updateRSSI(){
 
     // For every 1 second, reset the RSSI value to high if it hasn't been received for a while
     for (uint8_t it = 0; it < 9; it++) if (usecTimestamp() >= time_array_other_drones[it] + 1000*1000) {
@@ -94,66 +77,45 @@ void readEveryStep(){
     }
 
     // get RSSI, id and angle of closests crazyflie.
-    id_inter_closest = (uint8_t)find_minimum(rssi_array_other_drones, 9);
-    rssi_angle_inter_closest = rssi_angle_array_other_drones[id_inter_closest]; //
+    uint8_t id_inter_closest = (uint8_t)find_minimum(rssi_array_other_drones, 9);
+    rssi_data.angle_inter = rssi_angle_array_other_drones[id_inter_closest]; 
 
     uint8_t rssi_inter_closest = rssi_array_other_drones[id_inter_closest];
-    rssi_inter_filtered =  (uint8_t)update_median_filter_f(&medFilt_2, (float)rssi_inter_closest); //
+    rssi_data.inter =  (uint8_t)update_median_filter_f(&medFilt_2, (float)rssi_inter_closest); 
 
 
     //t RSSI of beacon
-    rssi_beacon_filtered =  (uint8_t)update_median_filter_f(&medFilt_3, (float)rssi_beacon); //
+    rssi_data.beacon =  (uint8_t)update_median_filter_f(&medFilt_3, (float)rssi_beacon); 
 
+    priority = id_inter_closest > my_id;
 }
 
 
 void initSGBA(){
-    if (my_id == 4 || my_id == 8) {
-        init_SGBA_controller(0.4, 0.5, -0.8);
-    } else if (my_id == 2 || my_id == 6) {
-        init_SGBA_controller(0.4, 0.5, 0.8);
-    } else if (my_id == 3 || my_id == 7) {
-        init_SGBA_controller(0.4, 0.5, -2.4);
-    } else if (my_id == 5 || my_id == 9) {
-        init_SGBA_controller(0.4, 0.5, 2.4);
-    } else {
-        init_SGBA_controller(0.4, 0.5, 0.8);
-    }
+    init_SGBA_controller(SGBA_init);
 }
-
 
 void callSGBA(SGBA_output_t* output, bool outbound){
 
-    bool priority = false;
-    if (id_inter_closest > my_id) {
-        priority = true;
-    } else {
-        priority = false;
-
-    }
-
     rssi_data_t rssi_data;
 
-    //TODO make outbound depended on battery.
-    state = SGBA_controller(output, , heading_rad,
-                                            (float)pos.x, (float)pos.y, rssi_beacon_filtered, rssi_inter_filtered, rssi_angle_inter_closest, priority, outbound);
+    orientation2d_t current_orientation = {sensorsData.position.x, sensorsData.position.y, sensorsData.yaw};
+    
+    //int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
+    SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
 
-    memcpy(&p_reply.data[1],&rssi_angle, sizeof(float));
+    memcpy(&p_reply.data[1], &output->rssi_angle, sizeof(float));
 
     // convert yaw rate commands to degrees
-    float vel_w_cmd_convert = vel_w_cmd * 180.0f / (float)M_PI;
-    vel_command(&setpoint_BG, vel_x_cmd, vel_y_cmd, vel_w_cmd_convert, nominal_height);
-    on_the_ground = false;
+    output->vel_cmd.w = output->vel_cmd.w * 180.0f / (float)M_PI;
 }
 
 
-void endStep(){
-
+void trySendBroadcast() {
     if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
         radiolinkSendP2PPacketBroadcast(&p_reply);
         radioSendBroadcastTime = usecTimestamp();
     }
-
 }
 
 
