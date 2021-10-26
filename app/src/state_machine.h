@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "state_control.h"
 #include "commander_unit.h"
+#include "SGBA_interface.h"
 
 typedef enum
 {
