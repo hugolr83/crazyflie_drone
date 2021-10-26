@@ -14,9 +14,6 @@
 
 void init_SGBA_controller(float new_ref_distance_from_wall, float max_speed_ref,
                                        float begin_wanted_heading);
-int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle, int *state_wallfollowing,
-                                 range_t range,
-                                 float current_heading, float current_pos_x, float current_pos_y, uint8_t rssi_beacon,
-                                 uint8_t rssi_inter, float rssi_angle_inter, bool priority, bool outbound);
+int SGBA_controller(SGBA_output_t* output, range_t range, orientation2d_t current_orientation, rssi_data_t rssi_data, bool priority, bool outbound);
 
 #endif /* SRC_LIB_WALLFOLLOWING_MULTIRANGER_ONBOARD_COM_BUG_WITH_LOOPING_H_ */

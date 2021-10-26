@@ -25,10 +25,37 @@ typedef struct {
     float right;
 } range_t;
 
+
+
+
 typedef struct {
     point_t position;
     range_t range;
     int batteryLevel;
 } sensorsData_t;
+
+
+// SGBA models
+
+typedef struct vec2d_angle_s {
+    float x;
+    float y;
+    float w;
+} vec2d_angle_t;
+
+typedef struct vec2d_angle_s orientation2d_t;
+typedef struct vec2d_angle_s velocity2d_t;
+
+typedef struct {
+  velocity2d_t vel_cmd;
+  float rssi_angle;
+  int state_wallfollowing;
+} SGBA_output_t;
+
+typedef struct {
+  uint8_t beacon;
+  uint8_t inter;
+  float angle_inter;
+} rssi_data_t;
 
 #endif
