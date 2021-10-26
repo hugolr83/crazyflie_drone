@@ -32,6 +32,7 @@ typedef struct {
     point_t position;
     range_t range;
     int batteryLevel;
+    float yaw; // rad
 } sensorsData_t;
 
 
@@ -45,6 +46,12 @@ typedef struct vec2d_angle_s {
 
 typedef struct vec2d_angle_s orientation2d_t;
 typedef struct vec2d_angle_s velocity2d_t;
+
+typedef struct {
+    float distance_from_wall;
+    float max_speed;
+    float wanted_angle;
+} SGBA_init_t;
 
 typedef struct {
   velocity2d_t vel_cmd;
