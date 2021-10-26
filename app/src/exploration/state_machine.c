@@ -46,14 +46,6 @@ float height;
 static bool taken_off = false;
 static float nominal_height = 0.3;
 
-// Switch to multiple methods, that increases in complexity 
-//1= wall_following: Go forward and follow walls with the multiranger 
-//2=wall following with avoid: This also follows walls but will move away if another crazyflie with an lower ID is coming close, 
-//3=SGBA: The SGBA method that incorperates the above methods.
-//        NOTE: the switching between outbound and inbound has not been implemented yet
-#define METHOD 3
-
-
 void p2pcallbackHandler(P2PPacket *p);
 static uint8_t rssi_inter;
 static uint8_t rssi_inter_filtered;
@@ -75,15 +67,11 @@ static float up_range;
 static float back_range;
 static float rssi_angle;
 static int state;
-#if METHOD == 3
 static int state_wf;
-#endif
 static float up_range_filtered;
 static paramVarId_t varid;
 static logVarId_t logid;
-//static bool manual_startup = false;
 static bool on_the_ground = true;
-//static uint32_t time_stamp_manual_startup_command = 0;
 static bool correctly_initialized;
 static uint8_t rssi_array_other_drones[9] = {150, 150, 150, 150, 150, 150, 150, 150, 150};
 static uint64_t time_array_other_drones[9] = {0};
@@ -171,17 +159,6 @@ static int32_t find_minimum(uint8_t a[], int32_t n)
   return index;
 }
 
-/*static double wraptopi(double number)
-{
-
-  if(number>(double)M_PI)
-    return (number-(double)(2*M_PI));
-  else if(number< (double)(-1*M_PI))
-    return (number+(double)(2*M_PI));
-  else
-    return (number);
-
-}*/
 void appMain(void *param)
 {
   static struct MedianFilterFloat medFilt;
@@ -199,15 +176,11 @@ void appMain(void *param)
   memcpy(&p_reply.data[1], &rssi_angle, sizeof(float));
   p_reply.size=5;
 
-#if METHOD!=1
   static uint64_t radioSendBroadcastTime=0;
-#endif
 
   static uint64_t takeoffdelaytime = 0;
 
-  #if METHOD==3
   static bool outbound = true;
-  #endif
 
   systemWaitStart();
   vTaskDelay(M2T(3000));
@@ -227,20 +200,6 @@ void appMain(void *param)
     rssi_inter_closest = rssi_array_other_drones[id_inter_closest];
     rssi_angle_inter_closest = rssi_angle_array_other_drones[id_inter_closest];
 
-
-    // filter rssi
-    /*static int pos_avg = 0;
-    static long sum = 0;
-    static int arrNumbers[76] = {35};
-    static int len = sizeof(arrNumbers) / sizeof(int);
-    rssi_beacon_filtered = (uint8_t)movingAvg(arrNumbers, &sum, pos_avg, len, (int)rssi_beacon);*/
-
-
-    /*static int arrNumbers_inter[10] = {35};
-    static int len_inter = 10;//sizeof(arrNumbers_inter) / sizeof(int);
-    static int pos_avg_inter = 0;
-    static long sum_inter = 0;
-    rssi_inter_filtered = (uint8_t)movingAvg(arrNumbers_inter, &sum_inter, pos_avg_inter, len_inter, (int)rssi_inter_closest);*/
     rssi_inter_filtered =  (uint8_t)update_median_filter_f(&medFilt_2, (float)rssi_inter_closest);
 
     //checking init of multiranger and flowdeck
@@ -260,14 +219,6 @@ void appMain(void *param)
     logid = (int)logGetVarId("radio", "rssi");
     rssi_beacon = logGetFloat(logid);
     rssi_beacon_filtered =  (uint8_t)update_median_filter_f(&medFilt_3, (float)rssi_beacon);
-
-
-    /* filter rssi
-    static int pos_avg = 0;
-    static long sum = 0;
-    static int arrNumbers[26] = {35};
-    static int len = sizeof(arrNumbers) / sizeof(int);
-    rssi_beacon_filtered = (uint8_t)movingAvg(arrNumbers, &sum, pos_avg, len, (int)rssi_beacon);*/
 
 
     // Select which laser range sensor readings to use
@@ -292,29 +243,6 @@ void appMain(void *param)
     if (up_range_filtered < 0.05f) {
       up_range_filtered = up_range;
     }
-    //up_range_filtered = 1.0f;
-    //***************** Manual Startup procedure*************//
-
-    //TODO: shut off engines when crazyflie is on it's back.
-
-    /*    // indicate if top range is hit while it is not flying yet, then start counting
-        if (keep_flying == false && manual_startup==false && up_range <0.2f && on_the_ground == true)
-        {
-          manual_startup = true;
-          time_stamp_manual_startup_command = xTaskGetTickCount();
-        }
-
-        // While still on the ground, but indicated that manual startup is requested, keep checking the time
-        if (keep_flying == false && manual_startup == true)
-        {
-            uint32_t currentTime = xTaskGetTickCount();
-            // If 3 seconds has passed, start flying.
-            if ((currentTime -time_stamp_manual_startup_command) > MANUAL_STARTUP_TIMEOUT)
-            {
-              keep_flying = true;
-              manual_startup = false;
-            }
-        }*/
 
     // Don't fly if multiranger/updownlaser is not connected or the uprange is activated
 
@@ -323,17 +251,11 @@ void appMain(void *param)
     }
 
 
-#if METHOD == 3
     uint8_t rssi_beacon_threshold = 41;
        if (keep_flying == true && (!correctly_initialized || up_range < 0.2f || (!outbound
                                    && rssi_beacon_filtered < rssi_beacon_threshold))) {
          keep_flying = 0;
        }
-#else
-       if (keep_flying == true && (!correctly_initialized || up_range < 0.2f)) {
-         keep_flying = 0;
-       }
-#endif
 
     state = 0;
 
@@ -348,21 +270,6 @@ void appMain(void *param)
          */
     	  vel_w_cmd = 0;
         hover(&setpoint_BG, nominal_height);
-
-#if METHOD == 1 //WALL_FOLLOWING
-        // wall following state machine
-        state = wall_follower(&vel_x_cmd, &vel_y_cmd, &vel_w_cmd, front_range, right_range, heading_rad, 1);
-#endif
-#if METHOD ==2 //WALL_FOLLOWER_AND_AVOID
-        if (id_inter_closest > my_id) {
-            rssi_inter_filtered = 140;
-        }
-
-        state = wall_follower_and_avoid_controller(&vel_x_cmd, &vel_y_cmd, &vel_w_cmd, front_range, left_range, right_range,
-                heading_rad, rssi_inter_filtered);
-#endif
-#if METHOD==3 // SwWARM GRADIENT BUG ALGORITHM
-
 
 
         bool priority = false;
@@ -381,16 +288,9 @@ void appMain(void *param)
 
 
 
-#endif
 
         // convert yaw rate commands to degrees
         float vel_w_cmd_convert = vel_w_cmd * 180.0f / (float)M_PI;
-
-        // Convert relative commands to world commands (not necessary anymore)
-        /*float psi = heading_rad;
-        float vel_x_cmd_convert =  cosf(-psi) * vel_x_cmd + sinf(-psi) * vel_y_cmd;
-        float vel_y_cmd_convert = -sinf(-psi) * vel_x_cmd + cosf(-psi) * vel_y_cmd;*/
-        //float vel_y_cmd_convert = -1 * vel_y_cmd;
         vel_command(&setpoint_BG, vel_x_cmd, vel_y_cmd, vel_w_cmd_convert, nominal_height);
         on_the_ground = false;
       } else {
@@ -406,17 +306,6 @@ void appMain(void *param)
                   taken_off = true;
 
 
-#if METHOD==1 // wall following
-          wall_follower_init(0.4, 0.5, 1);
-#endif
-#if METHOD==2 // wallfollowing with avoid
-          if (my_id%2==1)
-          init_wall_follower_and_avoid_controller(0.4, 0.5, -1);
-          else
-          init_wall_follower_and_avoid_controller(0.4, 0.5, 1);
-
-#endif
-#if METHOD==3 // Swarm Gradient Bug Algorithm
           if (my_id == 4 || my_id == 8) {
               init_SGBA_controller(0.4, 0.5, -0.8);
           } else if (my_id == 2 || my_id == 6) {
@@ -430,7 +319,6 @@ void appMain(void *param)
           }
 
 
-#endif
 
 
               }
@@ -469,13 +357,11 @@ void appMain(void *param)
       }
     }
 
-#if METHOD != 1
     if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
         radiolinkSendP2PPacketBroadcast(&p_reply);
         radioSendBroadcastTime = usecTimestamp();
     }
 
-#endif
     commanderSetSetpoint(&setpoint_BG, STATE_MACHINE_COMMANDER_PRI);
 
   }
@@ -488,7 +374,6 @@ void p2pcallbackHandler(P2PPacket *p)
 
     if (id_inter_ext == 0x63)
     {
-        // rssi_beacon =rssi_inter;
         keep_flying =  p->data[1];
     }else if(id_inter_ext == 0x64){
         rssi_beacon =p->rssi;
