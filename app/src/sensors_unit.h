@@ -4,7 +4,9 @@
 #include "range.h"
 #include "battery.h"
 #include <stdlib.h>
+#include <math.h>
 #include "models.h"
+#include "log.h"
 
 extern sensorsData_t sensorsData;
 
