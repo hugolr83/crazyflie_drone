@@ -26,8 +26,6 @@ typedef struct {
 } range_t;
 
 
-
-
 typedef struct {
     point_t position;
     range_t range;
