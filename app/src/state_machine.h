@@ -23,5 +23,6 @@ typedef enum
 extern state_fsm_t state;
 
 void stateMachineStep();
+void storeInitialPos();
 
 #endif

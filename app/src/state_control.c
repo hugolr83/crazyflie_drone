@@ -18,6 +18,7 @@ void handleCommand(command_t* command){
         case START_EXPLORATION_CMD:
             if(state == READY) {
                 state = TAKING_OFF;
+                storeInitialPos();// store initial position on start of mission
             }
             break;
         case TAKE_OFF_CMD:

@@ -1,6 +1,7 @@
 #include "state_machine.h"
 
 state_fsm_t state = NOT_READY;
+static point_t initialPos;
 
 static void setNextState();
 static void executeState();
@@ -55,8 +56,11 @@ static void setNextState(){
             break;
 
         case RETURNING_BASE:
-            // TODO: initialPos
-            if(false) {
+            float diffX = sensorsData.position.x - initialPos.x;  
+            float diffY = sensorsData.position.y - initialPos.y;  
+            float diffZ = sensorsData.position.z - initialPos.z;
+            float distance = diffX * diffX + diffY * diffY + diffZ * diffZ;
+            if(distance < 0.5 * 0.5) {
                 state = LANDING;
             }
             break;    
@@ -110,6 +114,13 @@ static void executeState(){
         default:
             break;
     }
+}
+
+void storeInitialPos() {
+    initialPos.x = sensorsData.position.x;
+    initialPos.y = sensorsData.position.x;
+    initialPos.z = sensorsData.position.x;
+    initialPos.timestamp = sensorsData.position.x;
 }
 
 static void executeSGBA(bool outbound){
