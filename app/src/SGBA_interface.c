@@ -6,21 +6,7 @@
  */
 
 
-#include <string.h>
-#include <errno.h>
-#include <math.h>
-
-#include "usec_time.h"
-#include "radiolink.h"
-#include "configblock.h"
-
-#include "models.h"
-#include "sensors_unit.h"
-#include "SGBA.h"
-#include "median_filter.h"
-
-void p2pcallbackHandler(P2PPacket *p);
-
+#include "SGBA_interface.h"
 
 //  SGBA input
 static SGBA_init_t SGBA_init;
@@ -45,7 +31,7 @@ static uint8_t my_id;
 static P2PPacket p_reply;
 static uint64_t radioSendBroadcastTime=0;
 
-void initOnlyOneTime(){
+void initRSSI(){
     
     init_median_filter_f(&medFilt_2, 5);
     
@@ -110,17 +96,7 @@ void callSGBA(SGBA_output_t* output, bool outbound){
     output->vel_cmd.w = output->vel_cmd.w * 180.0f / (float)M_PI;
 }
 
-
-void trySendBroadcast() {
-    if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
-        radiolinkSendP2PPacketBroadcast(&p_reply);
-        radioSendBroadcastTime = usecTimestamp();
-    }
-}
-
-
-void p2pcallbackHandler(P2PPacket *p)
-{
+void p2pcallbackHandler(P2PPacket *p){
     uint8_t id_inter_ext = p->data[0];
 
 
@@ -137,4 +113,14 @@ void p2pcallbackHandler(P2PPacket *p)
         rssi_angle_array_other_drones[id_inter_ext] = rssi_angle_inter_ext;
     }
 }
+
+void trySendBroadcast(){
+    if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
+        radiolinkSendP2PPacketBroadcast(&p_reply);
+        radioSendBroadcastTime = usecTimestamp();
+    }
+}
+
+
+
 
