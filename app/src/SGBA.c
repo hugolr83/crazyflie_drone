@@ -24,11 +24,9 @@ const uint8_t rssi_collision_threshold = 50; // normal batteris 43/45/45/46 bigg
 
 
 
-static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, 
-                  range_t range,
-                  float* direction, bool priority,
-                  rssi_data_t rssi_data, bool outbound, int state_wf);
-                  
+static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, range_t range,
+                  float* direction, bool priority, rssi_data_t rssi_data, bool outbound, int state_wf);
+
 static void executeState(int state, SGBA_output_t* output, range_t range,
                   float current_heading, float wanted_angle_dir, int direction, int state_wf);
 
@@ -83,10 +81,8 @@ int SGBA_controller(SGBA_output_t* output, range_t range, orientation2d_t curren
 
 
 
-static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, 
-                  range_t range,
-                  float* direction, bool priority,
-                  rssi_data_t rssi_data, bool outbound,int state_wf)
+static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, range_t range,
+                  float* direction, bool priority, rssi_data_t rssi_data, bool outbound,int state_wf)
 {
 
 
@@ -303,8 +299,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
 
 
-static void executeState(int state, SGBA_output_t* output,
-                  range_t range,
+static void executeState(int state, SGBA_output_t* output, range_t range,
                   float current_heading, float wanted_angle_dir, int direction, int state_wf){
   /***********************************************************
    * Handle state actions
