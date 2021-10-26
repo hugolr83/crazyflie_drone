@@ -12,5 +12,6 @@ float wraptopi(float number);
 void commandTurn(float *vel_w, float max_rate);
 uint8_t maxValue(uint8_t myArray[], int size);
 float fillHeadingArray(uint8_t *correct_heading_array, float rssi_heading, int diff_rssi, int max_meters);
+int32_t find_minimum(uint8_t a[], int32_t n);
 
 #endif

@@ -51,6 +51,23 @@ uint8_t maxValue(uint8_t myArray[], int size)
   return maxValue;
 }
 
+int32_t find_minimum(uint8_t a[], int32_t n)
+{
+  int32_t c, min, index;
+
+  min = a[0];
+  index = 0;
+
+  for (c = 1; c < n; c++) {
+    if (a[c] < min) {
+      index = c;
+      min = a[c];
+    }
+  }
+
+  return index;
+}
+
 float fillHeadingArray(uint8_t *correct_heading_array, float rssi_heading, int diff_rssi, int max_meters)
 {
 
