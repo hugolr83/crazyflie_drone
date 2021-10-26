@@ -167,6 +167,15 @@ void init_SGBA_controller(float new_ref_distance_from_wall, float max_speed_ref,
   first_run = true;
 }
 
+static void setNextState(float* wanted_angle_dir, float current_heading, int state, 
+                  float front_range, float left_range, float right_range, float back_range,
+                  float* direction, float current_pos_x, float current_pos_y, bool priority,
+                  uint8_t rssi_inter, bool outbound, float rssi_angle_inter, int state_wf, 
+                  uint8_t rssi_beacon);
+static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
+                  float front_range, float left_range, float right_range, float back_range,
+                  float current_heading, float wanted_angle_dir, int direction, int state_wf);
+
 
 int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle, int *state_wallfollowing,
                                  float front_range, float left_range, float right_range, float back_range,
@@ -176,33 +185,65 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
 
   // Initalize static variables
   static int state = 2;
-  //static float previous_heading = 0;
   static int state_wf = 0;
   static float wanted_angle_dir = 0;
-  static float pos_x_hit = 0;
-  static float pos_y_hit = 0;
-  static float pos_x_sample = 0;
-  static float pos_y_sample = 0;
-  //static float pos_x_move = 0;
-  //static float pos_y_move = 0;
-  static bool overwrite_and_reverse_direction = false;
+  
   static float direction = 1;
+  
+  setNextState(&wanted_angle_dir, current_heading, state,
+                front_range, left_range, right_range, back_range,
+                &direction, current_pos_x, current_pos_y, priority, 
+                rssi_inter, outbound, rssi_angle_inter, state_wf, rssi_beacon);
+  
+  executeState(state, vel_x, vel_y, vel_w, rssi_angle, state_wallfollowing, 
+                front_range, left_range, right_range, back_range,
+                current_heading, wanted_angle_dir, direction, state_wf);
+                
+  return state;
+}
+
+
+
+static void setNextState(float* wanted_angle_dir, float current_heading, int state, 
+                  float front_range, float left_range, float right_range, float back_range,
+                  float* direction, float current_pos_x, float current_pos_y, bool priority,
+                  uint8_t rssi_inter, bool outbound, float rssi_angle_inter, int state_wf, 
+                  uint8_t rssi_beacon)
+{
+
+
+    /***********************************************************
+   * State definitions
+   ***********************************************************/
+  // 1 = forward
+  // 2 = rotate_to_goal
+  // 3 = wall_following
+  // 4 = move out of way
+
+  /***********************************************************
+   * Handle state transitions
+   ***********************************************************/
+  
+  // Initalize static variables
+
+  static bool overwrite_and_reverse_direction = false;
   static bool cannot_go_to_goal = false;
   static uint8_t prev_rssi = 150;
   static int diff_rssi = 0;
   static bool rssi_sample_reset = false;
   static float heading_rssi = 0;
   static uint8_t correct_heading_array[8] = {0};
-
   static bool first_time_inbound = true;
   static float wanted_angle_hit = 0;
-
-
+  static float pos_x_hit = 0;
+  static float pos_y_hit = 0;
+  static float pos_x_sample = 0;
+  static float pos_y_sample = 0;
 
   // if it is reinitialized
   if (first_run) {
 
-    wanted_angle_dir = wraptopi(current_heading - wanted_angle); // to determine the direction when turning to goal
+    *wanted_angle_dir = wraptopi(current_heading - wanted_angle); // to determine the direction when turning to goal
 
     overwrite_and_reverse_direction = false;
     state = 2;
@@ -214,38 +255,29 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
 
   if (first_time_inbound) {
     wraptopi(wanted_angle - 3.14f);
-    wanted_angle_dir = wraptopi(current_heading - wanted_angle);
+    *wanted_angle_dir = wraptopi(current_heading - wanted_angle);
     state = transition(2);
     first_time_inbound = false;
   }
 
-  /***********************************************************
-   * State definitions
-   ***********************************************************/
-  // 1 = forward
-  // 2 = rotate_to_goal
-  // 3 = wall_following
-  // 4 = move out of way
 
-  /***********************************************************
-   * Handle state transitions
-   ***********************************************************/
 
-  if (state == 1) {     //FORWARD
+  //FORWARD
+  if (state == 1) {     
     if (front_range < ref_distance_from_wall + 0.2f) {
 
-// if looping is detected, reverse direction (only on outbound)
+    // if looping is detected, reverse direction (only on outbound)
       if (overwrite_and_reverse_direction) {
-        direction = -1.0f * direction;
+        *direction = -1.0f * *direction;
         overwrite_and_reverse_direction = false;
       } else {
         if (left_range < right_range && left_range < 2.0f) {
-          direction = -1.0f;
+          *direction = -1.0f;
         } else if (left_range > right_range && right_range < 2.0f) {
-          direction = 1.0f;
+          *direction = 1.0f;
 
         } else if (left_range > 2.0f && right_range > 2.0f) {
-          direction = 1.0f;
+          *direction = 1.0f;
         } else {
 
         }
@@ -262,7 +294,11 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
       state = transition(3); //wall_following
 
     }
-  } else if (state == 2) { //ROTATE_TO_GOAL
+    return;
+  } 
+
+  //ROTATE_TO_GOAL
+  if (state == 2) { 
     // check if heading is close to the preferred_angle
     bool goal_check = logicIsCloseTo(wraptopi(current_heading - wanted_angle), 0, 0.1f);
     if (front_range < ref_distance_from_wall + 0.2f) {
@@ -275,14 +311,19 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
     if (goal_check) {
       state = transition(1); //forward
     }
-  } else if (state == 3) {      //WALL_FOLLOWING
+
+    return;
+  } 
+
+  //WALL_FOLLOWING
+  if (state == 3) {      
 
     // if another drone is close and there is no right of way, move out of the way
     if (priority == false && rssi_inter < rssi_threshold) {
       if (outbound) {
         if ((rssi_angle_inter < 0 && wanted_angle < 0) || (rssi_angle_inter > 0 && wanted_angle > 0)) {
           wanted_angle = -1 * wanted_angle;
-          wanted_angle_dir = wraptopi(current_heading - wanted_angle);
+          *wanted_angle_dir = wraptopi(current_heading - wanted_angle);
           //state= transition(2);
         }
       }
@@ -303,7 +344,7 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
     // Check if the goal is reachable from the current point of view of the agent
     float bearing_to_goal = wraptopi(wanted_angle - current_heading);
     bool goal_check_WF = false;
-    if (direction == -1) {
+    if (*direction == -1) {
       goal_check_WF = (bearing_to_goal < 0 && bearing_to_goal > -1.5f);
     } else {
       goal_check_WF = (bearing_to_goal > 0 && bearing_to_goal < 1.5f);
@@ -328,7 +369,7 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
     //      got to rotate to goal
     if ((state_wf == 6 || state_wf == 8) && goal_check_WF && front_range > ref_distance_from_wall + 0.4f
         && !cannot_go_to_goal) {
-      wanted_angle_dir = wraptopi(current_heading - wanted_angle); // to determine the direction when turning to goal
+      *wanted_angle_dir = wraptopi(current_heading - wanted_angle); // to determine the direction when turning to goal
       state = transition(2); //rotate_to_goal
     }
 
@@ -367,27 +408,24 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
     } else {
       rssi_sample_reset = true;
     }
-  } else if (state == 4) {    //MOVE_OUT_OF_WAY
+
+    return;
+  } 
+
+  //MOVE_OUT_OF_WAY
+  if (state == 4) {    
     // once the drone has gone by, rotate to goal
     if (rssi_inter >= rssi_collision_threshold) {
 
       state = transition(2); //rotate_to_goal
     }
-
+    return;
   }
-
-
-
-  
-  executeState(state, vel_x, vel_y, vel_w, rssi_angle, state_wallfollowing, 
-                front_range, left_range, right_range, back_range,
-                current_heading, wanted_angle_dir, direction, state_wf);
-                
-  return state;
 }
 
 
-void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
+
+static void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
                   float front_range, float left_range, float right_range, float back_range,
                   float current_heading, float wanted_angle_dir, int direction, int state_wf){
   /***********************************************************
