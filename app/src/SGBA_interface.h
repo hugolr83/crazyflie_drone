@@ -1,3 +1,6 @@
+#ifndef SRC_SGBA_INTERFACE_H_
+#define SRC_SGBA_INTERFACE_H_
+
 #include <string.h>
 #include <errno.h>
 #include <math.h>
@@ -22,3 +25,5 @@ void callSGBA(SGBA_output_t* output, bool outbound);
 // radio broadcast module
 void p2pcallbackHandler(P2PPacket *p);
 void trySendBroadcast();
+
+#endif
