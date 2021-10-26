@@ -160,7 +160,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
       pos_y_hit = current_orientation.y;
       wanted_angle_hit = wanted_angle;
 
-      wall_follower_init(0.4, 0.5, 3);
+      wall_follower_init(REF_DISTANCE_WALL, MAX_SPEED, 3);
 
       for (int it = 0; it < 8; it++) { correct_heading_array[it] = 0; }
 
@@ -176,7 +176,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
     bool goal_check = logicIsCloseTo(wraptopi(current_orientation.w - wanted_angle), 0, 0.1f);
     if (range.front < ref_distance_from_wall + 0.2f) {
       cannot_go_to_goal =  true;
-      wall_follower_init(0.4, 0.5, 3);
+      wall_follower_init(REF_DISTANCE_WALL, MAX_SPEED, 3);
 
       state = transition(3); //wall_following
 
@@ -265,7 +265,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
         float rel_x_sample = current_orientation.x - pos_x_sample;
         float rel_y_sample = current_orientation.y - pos_y_sample;
         float distance = sqrt(rel_x_sample * rel_x_sample + rel_y_sample * rel_y_sample);
-        if (distance > 1.0f) {
+        if (distance > TRAVEL_DISTANCE_SAMPLE) {
           rssi_sample_reset = true;
           heading_rssi = current_orientation.w;
           int diff_rssi_unf = (int)prev_rssi - (int)rssi_data.beacon;
@@ -274,7 +274,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
           diff_rssi = diff_rssi_unf;
 
           // Estimate the angle to the beacon
-          wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, 5);
+          wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, HEADING_STRATEGY_MAX_METERS);
         }
       }
 
@@ -318,7 +318,7 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
     if (range.right < ref_distance_from_wall) {
       temp_vel_y = 0.2f;
     }
-    temp_vel_x = 0.5;
+    temp_vel_x = FORWARD_SPEED;
 
   } 
 
@@ -326,9 +326,9 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
   if (state == 2) {  
     // rotate to goal, determined on the sign
     if (wanted_angle_dir < 0) {
-      commandTurn(&temp_vel_w, 0.5);
+      commandTurn(&temp_vel_w, MAX_RATE_SPEED);
     } else {
-      commandTurn(&temp_vel_w, -0.5);
+      commandTurn(&temp_vel_w, -MAX_RATE_SPEED);
     }
 
 
@@ -347,18 +347,17 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
   //MOVE_AWAY
   if (state == 4) {      
 
-    float save_distance = 0.7f;
-    if (range.left < save_distance) {
-      temp_vel_y = temp_vel_y - 0.5f;
+    if (range.left < SAVE_DISTANCE) {
+      temp_vel_y = temp_vel_y - MAX_SPEED;
     }
-    if (range.right < save_distance) {
-      temp_vel_y = temp_vel_y + 0.5f;
+    if (range.right < SAVE_DISTANCE) {
+      temp_vel_y = temp_vel_y + MAX_SPEED;
     }
-    if (range.front < save_distance) {
-      temp_vel_x = temp_vel_x - 0.5f;
+    if (range.front < SAVE_DISTANCE) {
+      temp_vel_x = temp_vel_x - MAX_SPEED;
     }
-    if (range.back < save_distance) {
-      temp_vel_x = temp_vel_x + 0.5f;
+    if (range.back < SAVE_DISTANCE) {
+      temp_vel_x = temp_vel_x + MAX_SPEED;
     }
 
   }

@@ -68,18 +68,18 @@ int32_t find_minimum(uint8_t a[], int32_t n)
   return index;
 }
 
-
+// TODO: plug preferred orientation
 SGBA_init_t getSGBAInitParam(int my_id) {
     if (my_id == 4 || my_id == 8) {
-        return (SGBA_init_t) { 0.4, 0.5, -0.8 };
+        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, -0.8 };
     } else if (my_id == 2 || my_id == 6) {
-        return (SGBA_init_t) { 0.4, 0.5, 0.8 };
+        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 0.8 };
     } else if (my_id == 3 || my_id == 7) {
-        return (SGBA_init_t) { 0.4, 0.5, -2.4 };
+        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, -2.4 };
     } else if (my_id == 5 || my_id == 9) {
-        return (SGBA_init_t) { 0.4, 0.5, 2.4 };
+        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 2.4 };
     } else {
-        return (SGBA_init_t) { 0.4, 0.5, 0.8 };
+        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 0.8 };
     }
 }
 
