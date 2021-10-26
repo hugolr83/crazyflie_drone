@@ -9,6 +9,8 @@
 #define SRC_LIB_WALLFOLLOWING_MULTIRANGER_ONBOARD_GRADIENT_BUG_WITH_LOOPING_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include "SGBA_utils.h"
+
 void init_SGBA_controller(float new_ref_distance_from_wall, float max_speed_ref,
                                        float begin_wanted_heading);
 int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle, int *state_wallfollowing,
