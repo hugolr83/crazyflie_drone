@@ -47,12 +47,11 @@ static float max_speed = 0.5;
 static float wanted_angle = 0;
 static bool first_run = true;
 
-void init_SGBA_controller(float new_ref_distance_from_wall, float max_speed_ref,
-                                       float begin_wanted_heading)
+void init_SGBA_controller(SGBA_init_t SGBA_init)
 {
-  ref_distance_from_wall = new_ref_distance_from_wall;
-  max_speed = max_speed_ref;
-  wanted_angle = begin_wanted_heading;
+  ref_distance_from_wall = SGBA_init.distance_from_wall;
+  max_speed = SGBA_init.max_speed;
+  wanted_angle = SGBA_init.wanted_angle;
   first_run = true;
 }
 
