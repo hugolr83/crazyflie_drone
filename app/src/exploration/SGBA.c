@@ -378,6 +378,18 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
 
 
 
+  
+  executeState(state, vel_x, vel_y, vel_w, rssi_angle, state_wallfollowing, 
+                front_range, left_range, right_range, back_range,
+                current_heading, wanted_angle_dir, direction, state_wf);
+                
+  return state;
+}
+
+
+void executeState(int state, float *vel_x, float *vel_y, float *vel_w,  float *rssi_angle, int *state_wallfollowing,
+                  float front_range, float left_range, float right_range, float back_range,
+                  float current_heading, float wanted_angle_dir, int direction, int state_wf){
   /***********************************************************
    * Handle state actions
    ***********************************************************/
@@ -386,7 +398,8 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
   float temp_vel_y = 0;
   float temp_vel_w = 0;
 
-  if (state == 1) {        //FORWARD
+  //FORWARD
+  if (state == 1) {        
     // stop moving if there is another drone in the way
     // forward max speed
     if (left_range < ref_distance_from_wall) {
@@ -396,9 +409,11 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
       temp_vel_y = 0.2f;
     }
     temp_vel_x = 0.5;
-    //}
 
-  } else  if (state == 2) {  //ROTATE_TO_GOAL
+  } 
+
+  //ROTATE_TO_GOAL
+  if (state == 2) {  
     // rotate to goal, determined on the sign
     if (wanted_angle_dir < 0) {
       commandTurn(&temp_vel_w, 0.5);
@@ -407,14 +422,20 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
     }
 
 
-  } else  if (state == 3) {       //WALL_FOLLOWING
+  } 
+
+  //WALL_FOLLOWING
+  if (state == 3) {       
     //Get the values from the wallfollowing
     if (direction == -1) {
       state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, front_range, left_range, current_heading, direction);
     } else {
       state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, front_range, right_range, current_heading, direction);
     }
-  } else if (state == 4) {      //MOVE_AWAY
+  } 
+
+  //MOVE_AWAY
+  if (state == 4) {      
 
     float save_distance = 0.7f;
     if (left_range < save_distance) {
@@ -440,5 +461,4 @@ int SGBA_controller(float *vel_x, float *vel_y, float *vel_w, float *rssi_angle,
   *vel_y = temp_vel_y;
   *vel_w = temp_vel_w;
 
-  return state;
 }
