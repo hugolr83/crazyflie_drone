@@ -12,7 +12,7 @@ void handleCommand(command_t* command){
             break;
         case LAND_CMD:
             if(state == HOVERING || state == EXPLORATION || state == RETURNING_BASE){
-                state = LANDING
+                state = LANDING;
             }
             break;
         case START_EXPLORATION_CMD:
