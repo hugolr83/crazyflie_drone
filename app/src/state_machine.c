@@ -5,7 +5,7 @@
 #define TAKEOFF_SPEED 0.25f
 #define LAND_SPEED 0.1f
 #define RETURN_BASE_LAND_DISTANCE 0.5f 
-#define LAND_THRESHOLD 0.001f
+#define LAND_THRESHOLD 0.1f
 
 state_fsm_t state = NOT_READY;
 static point_t initialPos;
@@ -20,6 +20,7 @@ void stateMachineStep(){
 }
 
 static void setNextState(){
+    static int counter = 0;
     switch (state)
     {
         case (NOT_READY) : {
@@ -61,8 +62,12 @@ static void setNextState(){
 
         case EXPLORATION:
             if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
+                counter++;
+            }
+            if(counter >= 500){
                 state = RETURNING_BASE;
                 DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
+                counter = 0;
             }
             break;
 
@@ -145,7 +150,8 @@ void storeInitialPos() {
 
 static void executeSGBA(bool outbound){
     SGBA_output_t SGBA_output;
-    callSGBA(&SGBA_output, outbound);
+    int state = callSGBA(&SGBA_output, outbound);
+    DEBUG_PRINT("SGBA state = %d \n", state);
     vel_command(&setpoint, SGBA_output.vel_cmd.x, SGBA_output.vel_cmd.y, SGBA_output.vel_cmd.w, NOMINAL_HEIGHT);
     trySendBroadcast();
 }
