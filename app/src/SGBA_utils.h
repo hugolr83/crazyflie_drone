@@ -11,7 +11,7 @@
 #define REF_DISTANCE_WALL 0.4f // m
 #define MAX_SPEED 0.5f // m/s
 #define MAX_RATE_SPEED 0.5f
-#define SAVE_DISTANCE 0.7f
+#define SAFE_DISTANCE 0.7f
 #define FORWARD_SPEED 0.5f
 #define TRAVEL_DISTANCE_SAMPLE 1.0f
 #define HEADING_STRATEGY_MAX_METERS 5
