@@ -75,7 +75,7 @@ SGBA_init_t getSGBAInitParam(int my_id) {
   if (my_id == 4 || my_id == 8) {
       wanted_angle = -0.8;
   } else if (my_id == 2 || my_id == 6) {
-      wanted_angle = 0.8;
+      wanted_angle = -0.8;
   } else if (my_id == 3 || my_id == 7) {
       wanted_angle = -2.4;
   } else if (my_id == 5 || my_id == 9) {
