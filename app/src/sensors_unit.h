@@ -9,7 +9,9 @@
 #include "log.h"
 
 extern sensorsData_t sensorsData;
+extern point_t initialPos;
 
 void updateSensorsData();
+void storeInitialPos();
 
 #endif
