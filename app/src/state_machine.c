@@ -8,8 +8,6 @@
 #define LAND_THRESHOLD 0.1f
 
 state_fsm_t state = NOT_READY;
-static point_t initialPos;
-
 static void setNextState();
 static void executeState();
 
@@ -141,17 +139,15 @@ static void executeState(){
     }
 }
 
-void storeInitialPos() {
-    initialPos.x = sensorsData.position.x;
-    initialPos.y = sensorsData.position.x;
-    initialPos.z = sensorsData.position.x;
-    initialPos.timestamp = sensorsData.position.x;
-}
+
 
 static void executeSGBA(bool outbound){
     SGBA_output_t SGBA_output;
     int state = callSGBA(&SGBA_output, outbound);
-    DEBUG_PRINT("SGBA state = %d \n", state);
+    if(false){
+        DEBUG_PRINT("SGBA state = %d \n", state);
+    }
+    
     vel_command(&setpoint, SGBA_output.vel_cmd.x, SGBA_output.vel_cmd.y, SGBA_output.vel_cmd.w, NOMINAL_HEIGHT);
     trySendBroadcast();
 }
