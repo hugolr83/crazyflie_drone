@@ -20,7 +20,7 @@ void updateRSSI();
 
 // SGBA state machine module
 void initSGBA();
-void callSGBA(SGBA_output_t* output, bool outbound);
+int callSGBA(SGBA_output_t* output, bool outbound);
 
 int getBeaconRSSI();
 
