@@ -15,6 +15,7 @@
 #define FORWARD_SPEED 0.5f
 #define TRAVEL_DISTANCE_SAMPLE 1.0f
 #define HEADING_STRATEGY_MAX_METERS 5
+#define RSSI_BEACON_THRESHOLD 41
 
 bool logicIsCloseTo(float real_value, float checked_value, float margin);
 float wraptopi(float number);

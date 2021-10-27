@@ -31,6 +31,10 @@ static uint8_t my_id;
 static P2PPacket p_reply;
 static uint64_t radioSendBroadcastTime=0;
 
+int getBeaconRSSI() {
+    return rssi_data.beacon;
+}
+
 void initRSSI(){
     
     init_median_filter_f(&medFilt_2, 5);
