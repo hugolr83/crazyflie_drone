@@ -19,8 +19,8 @@ float state_start_time;
 
 
 //Make variable
-const uint8_t rssi_threshold = 50;// normal batteries 50/52/53/53 bigger batteries 55/57/59
-const uint8_t rssi_collision_threshold = 43; // normal batteris 43/45/45/46 bigger batteries 48/50/52
+const uint8_t rssi_threshold = 58;// normal batteries 50/52/53/53 bigger batteries 55/57/59
+const uint8_t rssi_collision_threshold = 50; // normal batteris 43/45/45/46 bigger batteries 48/50/52
 
 
 
@@ -47,12 +47,15 @@ static float max_speed = 0.5;
 static float wanted_angle = 0;
 static bool first_run = true;
 
-void init_SGBA_controller(SGBA_init_t SGBA_init)
+static point_t initialPos;
+
+void init_SGBA_controller(SGBA_init_t SGBA_init, point_t initialPosI)
 {
   ref_distance_from_wall = SGBA_init.distance_from_wall;
   max_speed = SGBA_init.max_speed;
   wanted_angle = SGBA_init.wanted_angle;
   first_run = true;
+  initialPos = initialPosI;
 }
 
 
@@ -275,6 +278,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
           // Estimate the angle to the beacon
           wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, HEADING_STRATEGY_MAX_METERS);
+          wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
         }
       }
 
