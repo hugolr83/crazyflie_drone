@@ -24,7 +24,7 @@ const uint8_t rssi_collision_threshold = 43; // normal batteris 43/45/45/46 bigg
 
 
 
-static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, range_t range,
+static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int* state, range_t range,
                   float* direction, bool priority, rssi_data_t rssi_data, bool outbound, int state_wf);
 
 static void executeState(int state, SGBA_output_t* output, range_t range,
@@ -66,7 +66,7 @@ int SGBA_controller(SGBA_output_t* output, range_t range, orientation2d_t curren
   
   static float direction = 1;
   
-  setNextState(&wanted_angle_dir, current_orientation, state,
+  setNextState(&wanted_angle_dir, current_orientation, &state,
                 range,
                 &direction, priority, 
                 rssi_data, outbound, state_wf);
@@ -80,7 +80,7 @@ int SGBA_controller(SGBA_output_t* output, range_t range, orientation2d_t curren
 
 
 
-static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int state, range_t range,
+static void setNextState(float* wanted_angle_dir, orientation2d_t current_orientation, int* state, range_t range,
                   float* direction, bool priority, rssi_data_t rssi_data, bool outbound,int state_wf)
 {
 
@@ -119,7 +119,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
     *wanted_angle_dir = wraptopi(current_orientation.w - wanted_angle); // to determine the direction when turning to goal
 
     overwrite_and_reverse_direction = false;
-    state = 2;
+    *state = 2;
 
     float t =  usecTimestamp() / 1e6;
     state_start_time = t;
@@ -129,14 +129,14 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
   if (first_time_inbound) {
     wraptopi(wanted_angle - 3.14f);
     *wanted_angle_dir = wraptopi(current_orientation.w - wanted_angle);
-    state = transition(2);
+    *state = transition(2);
     first_time_inbound = false;
   }
 
 
 
   //FORWARD
-  if (state == 1) {     
+  if (*state == 1) {     
     if (range.front < ref_distance_from_wall + 0.2f) {
 
     // if looping is detected, reverse direction (only on outbound)
@@ -164,32 +164,32 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
       for (int it = 0; it < 8; it++) { correct_heading_array[it] = 0; }
 
-      state = transition(3); //wall_following
+      *state = transition(3); //wall_following
 
     }
     return;
   } 
 
   //ROTATE_TO_GOAL
-  if (state == 2) { 
+  if (*state == 2) { 
     // check if heading is close to the preferred_angle
     bool goal_check = logicIsCloseTo(wraptopi(current_orientation.w - wanted_angle), 0, 0.1f);
     if (range.front < ref_distance_from_wall + 0.2f) {
       cannot_go_to_goal =  true;
       wall_follower_init(REF_DISTANCE_WALL, MAX_SPEED, 3);
 
-      state = transition(3); //wall_following
+      *state = transition(3); //wall_following
 
     }
     if (goal_check) {
-      state = transition(1); //forward
+      *state = transition(1); //forward
     }
 
     return;
   } 
 
   //WALL_FOLLOWING
-  if (state == 3) {      
+  if (*state == 3) {      
 
     // if another drone is close and there is no right of way, move out of the way
     if (priority == false && rssi_data.inter < rssi_threshold) {
@@ -197,11 +197,11 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
         if ((rssi_data.angle_inter < 0 && wanted_angle < 0) || (rssi_data.angle_inter > 0 && wanted_angle > 0)) {
           wanted_angle = -1 * wanted_angle;
           *wanted_angle_dir = wraptopi(current_orientation.w - wanted_angle);
-          //state= transition(2);
+          //*state= transition(2);
         }
       }
       if (rssi_data.inter < rssi_collision_threshold) {
-        state = transition(4);
+        *state = transition(4);
 
       }
     }
@@ -243,7 +243,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
     if ((state_wf == 6 || state_wf == 8) && goal_check_WF && range.front > ref_distance_from_wall + 0.4f
         && !cannot_go_to_goal) {
       *wanted_angle_dir = wraptopi(current_orientation.w - wanted_angle); // to determine the direction when turning to goal
-      state = transition(2); //rotate_to_goal
+      *state = transition(2); //rotate_to_goal
     }
 
     // If going straight
@@ -286,11 +286,11 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
   } 
 
   //MOVE_OUT_OF_WAY
-  if (state == 4) {    
+  if (*state == 4) {    
     // once the drone has gone by, rotate to goal
     if (rssi_data.inter >= rssi_collision_threshold) {
 
-      state = transition(2); //rotate_to_goal
+      *state = transition(2); //rotate_to_goal
     }
     return;
   }
@@ -364,7 +364,7 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
 
 
   output->rssi_angle = wanted_angle;
-  output->state_wallfollowing = state_wf;
+  output->state_wallfollowing = *state_wf;
 
   output->vel_cmd.x = temp_vel_x;
   output->vel_cmd.y = temp_vel_y;
