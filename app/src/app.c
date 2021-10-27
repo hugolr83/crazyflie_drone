@@ -47,6 +47,8 @@ void appMain() {
 
   initRSSI();
 
+  vTaskDelay(M2T(3000));
+  
   while (true) {
     vTaskDelay(10);
 
