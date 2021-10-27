@@ -70,17 +70,21 @@ int32_t find_minimum(uint8_t a[], int32_t n)
 
 // TODO: plug preferred orientation
 SGBA_init_t getSGBAInitParam(int my_id) {
-    if (my_id == 4 || my_id == 8) {
-        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, -0.8 };
-    } else if (my_id == 2 || my_id == 6) {
-        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 0.8 };
-    } else if (my_id == 3 || my_id == 7) {
-        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, -2.4 };
-    } else if (my_id == 5 || my_id == 9) {
-        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 2.4 };
-    } else {
-        return (SGBA_init_t) { REF_DISTANCE_WALL, MAX_SPEED, 0.8 };
-    }
+  SGBA_init_t initParam =  { .distance_from_wall = REF_DISTANCE_WALL, .max_speed = MAX_SPEED };
+  float wanted_angle = 0;
+  if (my_id == 4 || my_id == 8) {
+      wanted_angle = -0.8;
+  } else if (my_id == 2 || my_id == 6) {
+      wanted_angle = 0.8;
+  } else if (my_id == 3 || my_id == 7) {
+      wanted_angle = -2.4;
+  } else if (my_id == 5 || my_id == 9) {
+      wanted_angle = 2.4;
+  } else {
+      wanted_angle = 0.8;
+  }
+  initParam.wanted_angle = wanted_angle;
+  return initParam;
 }
 
 float fillHeadingArray(uint8_t *correct_heading_array, float rssi_heading, int diff_rssi, int max_meters)
