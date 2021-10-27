@@ -19,8 +19,8 @@ float state_start_time;
 
 
 //Make variable
-const uint8_t rssi_threshold = 58;// normal batteries 50/52/53/53 bigger batteries 55/57/59
-const uint8_t rssi_collision_threshold = 50; // normal batteris 43/45/45/46 bigger batteries 48/50/52
+const uint8_t rssi_threshold = 50;// normal batteries 50/52/53/53 bigger batteries 55/57/59
+const uint8_t rssi_collision_threshold = 43; // normal batteris 43/45/45/46 bigger batteries 48/50/52
 
 
 
@@ -28,7 +28,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
                   float* direction, bool priority, rssi_data_t rssi_data, bool outbound, int state_wf);
 
 static void executeState(int state, SGBA_output_t* output, range_t range,
-                  float current_heading, float wanted_angle_dir, int direction, int state_wf);
+                  float current_heading, float wanted_angle_dir, int direction, int* state_wf);
 
 
 static int transition(int new_state)
@@ -73,7 +73,7 @@ int SGBA_controller(SGBA_output_t* output, range_t range, orientation2d_t curren
   
   executeState(state, output, 
                 range,
-                current_orientation.w, wanted_angle_dir, direction, state_wf);
+                current_orientation.w, wanted_angle_dir, direction, &state_wf);
                 
   return state;
 }
@@ -264,7 +264,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
         // if the crazyflie traveled for 1 meter, than measure if it went into the right path
         float rel_x_sample = current_orientation.x - pos_x_sample;
         float rel_y_sample = current_orientation.y - pos_y_sample;
-        float distance = sqrt(rel_x_sample * rel_x_sample + rel_y_sample * rel_y_sample);
+        float distance = rel_x_sample * rel_x_sample + rel_y_sample * rel_y_sample;
         if (distance > TRAVEL_DISTANCE_SAMPLE) {
           rssi_sample_reset = true;
           heading_rssi = current_orientation.w;
@@ -299,7 +299,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
 
 static void executeState(int state, SGBA_output_t* output, range_t range,
-                  float current_heading, float wanted_angle_dir, int direction, int state_wf){
+                  float current_heading, float wanted_angle_dir, int direction, int* state_wf){
   /***********************************************************
    * Handle state actions
    ***********************************************************/
@@ -338,25 +338,25 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
   if (state == 3) {       
     //Get the values from the wallfollowing
     if (direction == -1) {
-      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.left, current_heading, direction);
+      *state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.left, current_heading, direction);
     } else {
-      state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.right, current_heading, direction);
+      *state_wf = wall_follower(&temp_vel_x, &temp_vel_y, &temp_vel_w, range.front, range.right, current_heading, direction);
     }
   } 
 
   //MOVE_AWAY
   if (state == 4) {      
 
-    if (range.left < SAVE_DISTANCE) {
+    if (range.left < SAFE_DISTANCE) {
       temp_vel_y = temp_vel_y - MAX_SPEED;
     }
-    if (range.right < SAVE_DISTANCE) {
+    if (range.right < SAFE_DISTANCE) {
       temp_vel_y = temp_vel_y + MAX_SPEED;
     }
-    if (range.front < SAVE_DISTANCE) {
+    if (range.front < SAFE_DISTANCE) {
       temp_vel_x = temp_vel_x - MAX_SPEED;
     }
-    if (range.back < SAVE_DISTANCE) {
+    if (range.back < SAFE_DISTANCE) {
       temp_vel_x = temp_vel_x + MAX_SPEED;
     }
 
