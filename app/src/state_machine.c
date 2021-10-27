@@ -27,14 +27,15 @@ static void setNextState(){
             paramVarId_t idMultiranger = paramGetVarId("deck", "bcMultiranger");
             uint8_t positioningInit = paramGetUint(idPositioningDeck);
             uint8_t multirangerInit = paramGetUint(idMultiranger);
-            if(positioningInit && multirangerInit && sensorsData.batteryLevel < 2 * BATTERY_LEVEL_THRESHOLD){
+            if(positioningInit && multirangerInit && sensorsData.batteryLevel > BATTERY_LEVEL_THRESHOLD){
                 state = READY;
+                DEBUG_PRINT("drone is ready\n");
             }
             break;
         }
             
         case READY: // only command start mission to transition to taking off
-            if(sensorsData.batteryLevel < 2 * BATTERY_LEVEL_THRESHOLD){
+            if(sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
                 DEBUG_PRINT("Please recharge drone to at least 60 !");
                 state = NOT_READY;
             }
@@ -43,6 +44,7 @@ static void setNextState(){
         case TAKING_OFF: 
             if ( sensorsData.position.z > NOMINAL_HEIGHT){
                 state = HOVERING;
+                DEBUG_PRINT("Switched from takingoff to not hovering\n");
             } 
             break;
         
@@ -53,22 +55,29 @@ static void setNextState(){
         case LANDING:
             if ( sensorsData.position.z < LAND_THRESHOLD){
                 state = NOT_READY;
+                DEBUG_PRINT("Switched from landing to not ready\n");
             } 
             break;
 
         case EXPLORATION:
             if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
                 state = RETURNING_BASE;
+                DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
             }
             break;
 
         case (RETURNING_BASE):{
-            float diffX = sensorsData.position.x - initialPos.x;  
-            float diffY = sensorsData.position.y - initialPos.y;  
-            float diffZ = sensorsData.position.z - initialPos.z;
-            float distance = diffX * diffX + diffY * diffY + diffZ * diffZ;
-            if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
+            // float diffX = sensorsData.position.x - initialPos.x;  
+            // float diffY = sensorsData.position.y - initialPos.y;
+            // float distance = diffX * diffX + diffY * diffY; //+ diffZ * diffZ;
+            // if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
+            //     state = LANDING;
+            //     DEBUG_PRINT("Switched from returning base to landing \n");
+            // }
+
+            if (getBeaconRSSI() < RSSI_BEACON_THRESHOLD) {
                 state = LANDING;
+                DEBUG_PRINT("Switched from returning base to landing \n");
             }
             break;   
 
@@ -83,7 +92,9 @@ static void setNextState(){
     }
 
 }
+
 static void executeSGBA(bool outbound);
+
 static void executeState(){
 
     switch (state)
