@@ -85,17 +85,18 @@ void initSGBA(){
     init_SGBA_controller(SGBA_init);
 }
 
-void callSGBA(SGBA_output_t* output, bool outbound){
+int callSGBA(SGBA_output_t* output, bool outbound){
 
     orientation2d_t current_orientation = {sensorsData.position.x, sensorsData.position.y, sensorsData.yaw};
     
     //int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
-    SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
+    int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
 
     memcpy(&p_reply.data[1], &output->rssi_angle, sizeof(float));
 
     // convert yaw rate commands to degrees
     output->vel_cmd.w = output->vel_cmd.w * 180.0f / (float)M_PI;
+    return state;
 }
 
 void p2pcallbackHandler(P2PPacket *p){
