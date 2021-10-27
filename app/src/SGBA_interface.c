@@ -11,7 +11,7 @@
 //  SGBA input
 static SGBA_init_t SGBA_init;
 static rssi_data_t rssi_data;
-static bool priority;
+static bool priority = false;
 
 
 // RSSI data received from other drones/beacon
@@ -82,8 +82,6 @@ void initSGBA(){
 }
 
 void callSGBA(SGBA_output_t* output, bool outbound){
-
-    rssi_data_t rssi_data;
 
     orientation2d_t current_orientation = {sensorsData.position.x, sensorsData.position.y, sensorsData.yaw};
     
