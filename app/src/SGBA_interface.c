@@ -7,6 +7,7 @@
 
 
 #include "SGBA_interface.h"
+#include "debug.h"
 
 //  SGBA input
 static SGBA_init_t SGBA_init;
@@ -29,7 +30,7 @@ static uint8_t my_id;
 
 // P2P communication
 static P2PPacket p_reply;
-static uint64_t radioSendBroadcastTime=0;
+// static uint64_t radioSendBroadcastTime=0;
 
 int getBeaconRSSI() {
     return rssi_data.beacon;
@@ -82,7 +83,7 @@ void updateRSSI(){
 
 
 void initSGBA(){
-    init_SGBA_controller(SGBA_init);
+    init_SGBA_controller(SGBA_init, initialPos);
 }
 
 int callSGBA(SGBA_output_t* output, bool outbound){
@@ -90,6 +91,7 @@ int callSGBA(SGBA_output_t* output, bool outbound){
     orientation2d_t current_orientation = {sensorsData.position.x, sensorsData.position.y, sensorsData.yaw};
     
     //int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
+    DEBUG_PRINT("radio rssi = %f et angle inter = %f\n", (double)rssi_data.beacon, (double)rssi_data.angle_inter);
     int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
 
     memcpy(&p_reply.data[1], &output->rssi_angle, sizeof(float));
@@ -118,10 +120,7 @@ void p2pcallbackHandler(P2PPacket *p){
 }
 
 void trySendBroadcast(){
-    if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
-        radiolinkSendP2PPacketBroadcast(&p_reply);
-        radioSendBroadcastTime = usecTimestamp();
-    }
+    radiolinkSendP2PPacketBroadcast(&p_reply);
 }
 
 
