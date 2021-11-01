@@ -30,7 +30,7 @@ static uint8_t my_id;
 
 // P2P communication
 static P2PPacket p_reply;
-// static uint64_t radioSendBroadcastTime=0;
+static uint64_t radioSendBroadcastTime=0;
 
 int getBeaconRSSI() {
     return rssi_data.beacon;
@@ -76,6 +76,7 @@ void updateRSSI(){
 
 
     //t RSSI of beacon
+    rssi_beacon = logGetFloat(logGetVarId("radio", "rssi"));
     rssi_data.beacon =  (uint8_t)update_median_filter_f(&medFilt_3, (float)rssi_beacon); 
 
     priority = id_inter_closest > my_id;
@@ -104,25 +105,21 @@ int callSGBA(SGBA_output_t* output, bool outbound){
 void p2pcallbackHandler(P2PPacket *p){
     uint8_t id_inter_ext = p->data[0];
 
+    uint8_t rssi_inter = p->rssi;
+    float rssi_angle_inter_ext;
+    memcpy(&rssi_angle_inter_ext, &p->data[1], sizeof(float));
 
-    if(id_inter_ext == 0x64){
-        rssi_beacon =p->rssi;
-    }
-    else{
-        uint8_t rssi_inter = p->rssi;
-        float rssi_angle_inter_ext;
-        memcpy(&rssi_angle_inter_ext, &p->data[1], sizeof(float));
-
-        rssi_array_other_drones[id_inter_ext] = rssi_inter;
-        time_array_other_drones[id_inter_ext] = usecTimestamp();
-        rssi_angle_array_other_drones[id_inter_ext] = rssi_angle_inter_ext;
-    }
+    rssi_array_other_drones[id_inter_ext] = rssi_inter;
+    time_array_other_drones[id_inter_ext] = usecTimestamp();
+    rssi_angle_array_other_drones[id_inter_ext] = rssi_angle_inter_ext;  
 }
 
 void trySendBroadcast(){
-    radiolinkSendP2PPacketBroadcast(&p_reply);
+    if (usecTimestamp() >= radioSendBroadcastTime + 1000*500) {
+        radiolinkSendP2PPacketBroadcast(&p_reply);
+        radioSendBroadcastTime = usecTimestamp();
+    }
 }
-
 
 
 

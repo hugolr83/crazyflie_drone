@@ -56,6 +56,7 @@ void appMain() {
 
     updateSensorsData();
     updateRSSI();
+    memset(&setpoint, 0, sizeof(setpoint));
     
     handleCommand(&lastCommand);
     

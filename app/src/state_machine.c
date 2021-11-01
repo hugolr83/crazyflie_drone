@@ -8,8 +8,10 @@
 #define LAND_THRESHOLD 0.1f
 
 state_fsm_t state = NOT_READY;
+
 static void setNextState();
 static void executeState();
+static void executeSGBA(bool outbound);
 
 
 void stateMachineStep(){
@@ -95,8 +97,6 @@ static void setNextState(){
     }
 
 }
-
-static void executeSGBA(bool outbound);
 
 static void executeState(){
 
