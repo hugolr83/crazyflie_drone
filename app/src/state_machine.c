@@ -23,7 +23,8 @@ void stateMachineStep(){
 }
 
 static void setNextState(){
-    static int counter = 0;
+    static int counter1 = 0;
+    static int counter2 = 0;
     switch (state)
     {
         case (NOT_READY) : {
@@ -40,12 +41,12 @@ static void setNextState(){
             
         case READY: // only command start mission to transition to taking off
             if (sensorsData.batteryLevel < 2 * BATTERY_LEVEL_THRESHOLD){
-                counter++;
+                counter1++;
             }
-            if(counter >= 500){
+            if(counter1 >= 500){
                 state = NOT_READY;
                 DEBUG_PRINT("Please recharge drone to at least 60 ! battery level = %d \n", sensorsData.batteryLevel);
-                counter = 0;
+                counter1 = 0;
             }
             break;
 
@@ -69,12 +70,12 @@ static void setNextState(){
 
         case EXPLORATION:
             if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
-                counter++;
+                counter2++;
             }
-            if(counter >= 500){
+            if(counter2 >= 500){
                 state = RETURNING_BASE;
                 DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
-                counter = 0;
+                counter2 = 0;
             }
             break;
 
