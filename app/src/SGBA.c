@@ -129,7 +129,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
     first_run = false;
   }
 
-  if (first_time_inbound) {
+  if (first_time_inbound && !outbound) {
     wraptopi(wanted_angle - 3.14f);
     *wanted_angle_dir = wraptopi(current_orientation.w - wanted_angle);
     *state = transition(2);
@@ -278,7 +278,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
           // Estimate the angle to the beacon
           wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, HEADING_STRATEGY_MAX_METERS);
-          wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
+          //wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
         }
       }
 
