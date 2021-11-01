@@ -15,6 +15,9 @@ static void executeSGBA(bool outbound);
 
 
 void stateMachineStep(){
+    if(supervisorIsTumbled()){
+        state = CRASHED;
+    };
     setNextState();
     executeState();
 }
@@ -90,6 +93,9 @@ static void setNextState(){
              
         
         case CRASHED:
+            if(!supervisorIsTumbled()){
+                state = NOT_READY;
+             };
             break; 
         
         default:
@@ -131,7 +137,8 @@ static void executeState(){
             executeSGBA(false);
             break;    
         
-        case CRASHED: // TODO
+        case CRASHED:
+            shut_off_engines(&setpoint);
             break; 
         
         default:
