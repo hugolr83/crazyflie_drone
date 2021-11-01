@@ -39,9 +39,13 @@ static void setNextState(){
         }
             
         case READY: // only command start mission to transition to taking off
-            if(sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
-                DEBUG_PRINT("Please recharge drone to at least 60 !");
+            if (sensorsData.batteryLevel < 2 * BATTERY_LEVEL_THRESHOLD){
+                counter++;
+            }
+            if(counter >= 500){
                 state = NOT_READY;
+                DEBUG_PRINT("Please recharge drone to at least 60 ! battery level = %d \n", sensorsData.batteryLevel);
+                counter = 0;
             }
             break;
 
