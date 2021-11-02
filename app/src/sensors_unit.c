@@ -20,7 +20,7 @@ void updateSensorsData(){
 
 void storeInitialPos() {
     initialPos.x = sensorsData.position.x;
-    initialPos.y = sensorsData.position.x;
-    initialPos.z = sensorsData.position.x;
-    initialPos.timestamp = sensorsData.position.x;
+    initialPos.y = sensorsData.position.y;
+    initialPos.z = sensorsData.position.z;
+    initialPos.timestamp = sensorsData.position.timestamp;
 }
