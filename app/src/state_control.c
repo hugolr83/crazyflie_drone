@@ -1,5 +1,6 @@
 #include "state_control.h"
 #include "state_machine.h"
+state_control_t stateControl;
 
 void handleCommand(command_t* command){
 
@@ -13,16 +14,15 @@ void handleCommand(command_t* command){
         case LAND_CMD:
             if(state == HOVERING || state == EXPLORATION || state == RETURNING_BASE){
                 state = LANDING;
+                stateControl.is_on_exploration_mode = false;
             }
             break;
         case START_EXPLORATION_CMD:
             if(state == READY) {
-                state = TAKING_OFF;
-                storeInitialPos();// store initial position on start of mission
+                stateControl.is_on_exploration_mode = true;
             }
             break;
         case TAKE_OFF_CMD:
-            // don't do shit
             break;
         case RETURN_TO_BASE_CMD:
             if(state == HOVERING){
@@ -30,6 +30,7 @@ void handleCommand(command_t* command){
             }
             else if(state == EXPLORATION){
                 state = RETURNING_BASE;
+                stateControl.is_on_exploration_mode = false;
             }
             break;
         default:

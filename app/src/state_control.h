@@ -5,6 +5,15 @@
 #include "commander_unit.h"
 
 
+typedef struct
+{
+  //bool keep_flying;
+  //bool outbound;
+  bool is_on_exploration_mode;
+} state_control_t;
+
+extern state_control_t stateControl;
+
 void handleCommand(command_t* command);
 
 

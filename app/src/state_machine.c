@@ -17,6 +17,7 @@ static void executeSGBA(bool outbound);
 void stateMachineStep(){
     if(supervisorIsTumbled()){
         state = CRASHED;
+        stateControl.is_on_exploration_mode = false;
     };
     setNextState();
     executeState();
@@ -40,13 +41,14 @@ static void setNextState(){
         }
             
         case READY: // only command start mission to transition to taking off
-            if (sensorsData.batteryLevel < 2 * BATTERY_LEVEL_THRESHOLD){
+            if (sensorsData.batteryLevel > 2 * BATTERY_LEVEL_THRESHOLD){
                 counter1++;
             }
-            if(counter1 >= 500){
-                state = NOT_READY;
-                DEBUG_PRINT("Please recharge drone to at least 60 ! battery level = %d \n", sensorsData.batteryLevel);
+            if(counter1 >= 500 && stateControl.is_on_exploration_mode){
+                state = EXPLORATION;
+                DEBUG_PRINT("Exploreeeee battery level = %d \n", sensorsData.batteryLevel);
                 counter1 = 0;
+                storeInitialPos();
             }
             break;
 
@@ -74,6 +76,7 @@ static void setNextState(){
             }
             if(counter2 >= 500){
                 state = RETURNING_BASE;
+                stateControl.is_on_exploration_mode = false;
                 DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
                 counter2 = 0;
             }
@@ -100,7 +103,8 @@ static void setNextState(){
         case CRASHED:
             if(!supervisorIsTumbled()){
                 state = NOT_READY;
-             };
+                DEBUG_PRINT("I am not not not crashed \n");
+            }
             break; 
         
         default:
@@ -144,6 +148,8 @@ static void executeState(){
         
         case CRASHED:
             shut_off_engines(&setpoint);
+            DEBUG_PRINT("I am crashed \n");
+
             break; 
         
         default:

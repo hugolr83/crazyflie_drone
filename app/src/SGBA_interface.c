@@ -92,7 +92,7 @@ int callSGBA(SGBA_output_t* output, bool outbound){
     orientation2d_t current_orientation = {sensorsData.position.x, sensorsData.position.y, sensorsData.yaw};
     
     //int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
-    DEBUG_PRINT("radio rssi = %f et angle inter = %f\n", (double)rssi_data.beacon, (double)rssi_data.angle_inter);
+    //DEBUG_PRINT("radio rssi = %f et angle inter = %f\n", (double)rssi_data.beacon, (double)rssi_data.angle_inter);
     int state = SGBA_controller(output, sensorsData.range, current_orientation, rssi_data, priority, outbound);
 
     memcpy(&p_reply.data[1], &output->rssi_angle, sizeof(float));
