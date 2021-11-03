@@ -31,6 +31,8 @@ typedef struct {
     range_t range;
     int batteryLevel;
     float yaw; // rad
+    //float voltage;
+    float voltageFiltered;
 } sensorsData_t;
 
 
