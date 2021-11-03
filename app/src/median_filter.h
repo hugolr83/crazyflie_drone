@@ -24,7 +24,7 @@
 #define MEDIAN_H
 
 #define MAX_MEDIAN_DATASIZE_I 101
-#define MAX_MEDIAN_DATASIZE_F 13
+#define MAX_MEDIAN_DATASIZE_F 40
 #define MEDIAN_DEFAULT_SIZE 5
 
 //#include "std.h"

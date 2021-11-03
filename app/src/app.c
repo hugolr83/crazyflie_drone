@@ -46,7 +46,8 @@
 void appMain() {
 
   initRSSI();
-
+  initBattery();
+  
   vTaskDelay(M2T(3000));
   
   while (true) {
@@ -68,7 +69,8 @@ void appMain() {
 }
 
 LOG_GROUP_START(drone)
-LOG_ADD(LOG_UINT8, batteryLevel, &sensorsData.batteryLevel)
 LOG_ADD(LOG_UINT8, state, &state)
+LOG_ADD(LOG_FLOAT, batteryFiltered, &sensorsData.voltageFiltered)
+//LOG_ADD(LOG_FLOAT, battery, &sensorsData.voltage)
 LOG_GROUP_STOP(drone)
 

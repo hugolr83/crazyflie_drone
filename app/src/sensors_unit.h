@@ -7,6 +7,7 @@
 #include <math.h>
 #include "models.h"
 #include "log.h"
+#include "median_filter.h"
 
 extern sensorsData_t sensorsData;
 extern point_t initialPos;

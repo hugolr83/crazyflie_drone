@@ -3,9 +3,13 @@
 sensorsData_t sensorsData;
 point_t initialPos;
 
+
+
+
 void updateSensorsData(){
     estimatorKalmanGetEstimatedPos(&sensorsData.position);
 
+    sensorsData.voltageFiltered = updateBatteryVoltage();
     sensorsData.batteryLevel = getBatteryPercentage();
 
     sensorsData.range.front = rangeGet(rangeFront) / 1000.0f;
@@ -14,8 +18,8 @@ void updateSensorsData(){
     sensorsData.range.right = rangeGet(rangeRight) / 1000.0f;
     
     logVarId_t logid = logGetVarId("stabilizer", "yaw");
-    float heading_deg = logGetFloat(logid);
-    sensorsData.yaw = heading_deg * (float)M_PI / 180.0f;
+    float headingDeg = logGetFloat(logid);
+    sensorsData.yaw = headingDeg * (float)M_PI / 180.0f;
 }
 
 void storeInitialPos() {
