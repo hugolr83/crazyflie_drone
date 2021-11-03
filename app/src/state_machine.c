@@ -1,11 +1,12 @@
 #include "state_machine.h"
 
-#define NOMINAL_HEIGHT 0.5f
+#define NOMINAL_HEIGHT 0.3f
 #define BATTERY_LEVEL_THRESHOLD 30
 #define TAKEOFF_SPEED 0.25f
 #define LAND_SPEED 0.1f
-#define RETURN_BASE_LAND_DISTANCE 0.5f 
+#define RETURN_BASE_LAND_DISTANCE 0.7f 
 #define LAND_THRESHOLD 0.1f
+#define BATTERY_DEBOUNCE 500
 
 state_fsm_t state = NOT_READY;
 
@@ -41,11 +42,11 @@ static void setNextState(){
         }
             
         case READY: // only command start mission to transition to taking off
-            if (sensorsData.batteryLevel > 2 * BATTERY_LEVEL_THRESHOLD){
+            if (sensorsData.batteryLevel >  2 * BATTERY_LEVEL_THRESHOLD){
                 counter1++;
             }
-            if(counter1 >= 500 && stateControl.is_on_exploration_mode){
-                state = EXPLORATION;
+            if(counter1 >= BATTERY_DEBOUNCE && stateControl.is_on_exploration_mode){
+                state = TAKING_OFF;
                 DEBUG_PRINT("Exploreeeee battery level = %d \n", sensorsData.batteryLevel);
                 counter1 = 0;
                 storeInitialPos();
@@ -74,7 +75,7 @@ static void setNextState(){
             if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
                 counter2++;
             }
-            if(counter2 >= 500){
+            if(counter2 >= BATTERY_DEBOUNCE){
                 state = RETURNING_BASE;
                 stateControl.is_on_exploration_mode = false;
                 DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
@@ -83,18 +84,18 @@ static void setNextState(){
             break;
 
         case (RETURNING_BASE):{
-            // float diffX = sensorsData.position.x - initialPos.x;  
-            // float diffY = sensorsData.position.y - initialPos.y;
-            // float distance = diffX * diffX + diffY * diffY; //+ diffZ * diffZ;
-            // if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
-            //     state = LANDING;
-            //     DEBUG_PRINT("Switched from returning base to landing \n");
-            // }
-
-            if (getBeaconRSSI() < RSSI_BEACON_THRESHOLD) {
+            float diffX = sensorsData.position.x - initialPos.x;  
+            float diffY = sensorsData.position.y - initialPos.y;
+            float distance = diffX * diffX + diffY * diffY; //+ diffZ * diffZ;
+            if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
                 state = LANDING;
                 DEBUG_PRINT("Switched from returning base to landing \n");
             }
+
+            // if (getBeaconRSSI() < RSSI_BEACON_THRESHOLD) {
+            //     state = LANDING;
+            //     DEBUG_PRINT("Switched from returning base to landing \n");
+            // }
             break;   
 
         }
