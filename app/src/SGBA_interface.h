@@ -25,8 +25,6 @@ void updateRSSI();
 void initSGBA();
 int callSGBA(SGBA_output_t* output, bool outbound);
 
-int getBeaconRSSI();
-
 // radio broadcast module
 void p2pcallbackHandler(P2PPacket *p);
 void trySendBroadcast();

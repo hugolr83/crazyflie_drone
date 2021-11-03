@@ -107,11 +107,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
   static bool overwrite_and_reverse_direction = false;
   static bool cannot_go_to_goal = false;
-  static uint8_t prev_rssi = 150;
-  static int diff_rssi = 0;
   static bool rssi_sample_reset = false;
-  static float heading_rssi = 0;
-  static uint8_t correct_heading_array[8] = {0};
   static float wanted_angle_hit = 0;
   static float pos_x_hit = 0;
   static float pos_y_hit = 0;
@@ -166,8 +162,6 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
       wanted_angle_hit = wanted_angle;
 
       wall_follower_init(ref_distance_from_wall, max_speed, 3);
-
-      for (int it = 0; it < 8; it++) { correct_heading_array[it] = 0; }
 
       *state = transition(3); //wall_following
 
@@ -262,7 +256,6 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
           pos_x_sample = current_orientation.x;
           pos_y_sample = current_orientation.y;
           rssi_sample_reset = false;
-          prev_rssi = rssi_data.beacon;
         }
 
 
@@ -272,14 +265,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
         float distance = rel_x_sample * rel_x_sample + rel_y_sample * rel_y_sample;
         if (distance > TRAVEL_DISTANCE_SAMPLE) {
           rssi_sample_reset = true;
-          heading_rssi = current_orientation.w;
-          int diff_rssi_unf = (int)prev_rssi - (int)rssi_data.beacon;
-
-          //rssi already gets filtered at the radio_link.c
-          diff_rssi = diff_rssi_unf;
-
           // Estimate the angle to the beacon
-          wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, HEADING_STRATEGY_MAX_METERS);
           wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
         }
       }

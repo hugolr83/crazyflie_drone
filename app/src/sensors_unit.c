@@ -3,9 +3,6 @@
 sensorsData_t sensorsData;
 point_t initialPos;
 
-
-
-
 void updateSensorsData(){
     estimatorKalmanGetEstimatedPos(&sensorsData.position);
 

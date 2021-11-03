@@ -16,15 +16,12 @@ static bool priority = false;
 
 
 // RSSI data received from other drones/beacon
-static uint8_t rssi_beacon;
 static uint8_t rssi_array_other_drones[9] = {150, 150, 150, 150, 150, 150, 150, 150, 150};
 static uint64_t time_array_other_drones[9] = {0};
 static float rssi_angle_array_other_drones[9] = {500.0f};
 
 // Median filters
-static struct MedianFilterFloat medFilt_2;
-static struct MedianFilterFloat medFilt_3;
-
+static struct MedianFilterFloat medFilt;
 
 static uint8_t my_id;
 
@@ -32,15 +29,9 @@ static uint8_t my_id;
 static P2PPacket p_reply;
 static uint64_t radioSendBroadcastTime=0;
 
-int getBeaconRSSI() {
-    return rssi_data.beacon;
-}
-
 void initRSSI(){
     
-    init_median_filter_f(&medFilt_2, 39);
-    
-    init_median_filter_f(&medFilt_3, 13);
+    init_median_filter_f(&medFilt, 39);
 
 
     p2pRegisterCB(p2pcallbackHandler);
@@ -72,12 +63,7 @@ void updateRSSI(){
     rssi_data.angle_inter = rssi_angle_array_other_drones[id_inter_closest]; 
 
     uint8_t rssi_inter_closest = rssi_array_other_drones[id_inter_closest];
-    rssi_data.inter =  (uint8_t)update_median_filter_f(&medFilt_2, (float)rssi_inter_closest); 
-
-
-    //t RSSI of beacon
-    rssi_beacon = logGetFloat(logGetVarId("radio", "rssi"));
-    rssi_data.beacon =  (uint8_t)update_median_filter_f(&medFilt_3, (float)rssi_beacon); 
+    rssi_data.inter =  (uint8_t)update_median_filter_f(&medFilt, (float)rssi_inter_closest); 
 
     priority = id_inter_closest > my_id;
 }
