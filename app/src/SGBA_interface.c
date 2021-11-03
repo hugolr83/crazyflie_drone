@@ -38,7 +38,7 @@ int getBeaconRSSI() {
 
 void initRSSI(){
     
-    init_median_filter_f(&medFilt_2, 5);
+    init_median_filter_f(&medFilt_2, 39);
     
     init_median_filter_f(&medFilt_3, 13);
 
@@ -49,7 +49,7 @@ void initRSSI(){
     my_id =(uint8_t)((address) & 0x00000000ff);
 
 
-    SGBA_init = getSGBAInitParam(my_id);
+    SGBA_init = getSGBAInitParam(my_id, REF_DISTANCE_WALL, MAX_SPEED);
     
     p_reply.port=0x00;
     p_reply.data[0]=my_id;
