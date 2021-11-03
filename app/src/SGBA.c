@@ -46,6 +46,8 @@ static float ref_distance_from_wall = 0;
 static float max_speed = 0.5;
 static float wanted_angle = 0;
 static bool first_run = true;
+static bool first_time_inbound = true;
+
 
 static point_t initialPos;
 
@@ -55,6 +57,7 @@ void init_SGBA_controller(SGBA_init_t SGBA_init, point_t initialPosI)
   max_speed = SGBA_init.max_speed;
   wanted_angle = SGBA_init.wanted_angle;
   first_run = true;
+  first_time_inbound = true;
   initialPos = initialPosI;
 }
 
@@ -109,7 +112,6 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
   static bool rssi_sample_reset = false;
   static float heading_rssi = 0;
   static uint8_t correct_heading_array[8] = {0};
-  static bool first_time_inbound = true;
   static float wanted_angle_hit = 0;
   static float pos_x_hit = 0;
   static float pos_y_hit = 0;
@@ -163,7 +165,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
       pos_y_hit = current_orientation.y;
       wanted_angle_hit = wanted_angle;
 
-      wall_follower_init(REF_DISTANCE_WALL, MAX_SPEED, 3);
+      wall_follower_init(ref_distance_from_wall, max_speed, 3);
 
       for (int it = 0; it < 8; it++) { correct_heading_array[it] = 0; }
 
@@ -179,7 +181,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
     bool goal_check = logicIsCloseTo(wraptopi(current_orientation.w - wanted_angle), 0, 0.1f);
     if (range.front < ref_distance_from_wall + 0.2f) {
       cannot_go_to_goal =  true;
-      wall_follower_init(REF_DISTANCE_WALL, MAX_SPEED, 3);
+      wall_follower_init(ref_distance_from_wall, max_speed, 3);
 
       *state = transition(3); //wall_following
 
@@ -278,7 +280,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
           // Estimate the angle to the beacon
           wanted_angle = fillHeadingArray(correct_heading_array, heading_rssi, diff_rssi, HEADING_STRATEGY_MAX_METERS);
-          //wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
+          wanted_angle = wraptopi(atan2(initialPos.y - current_orientation.y, initialPos.y - current_orientation.y));
         }
       }
 
@@ -352,16 +354,16 @@ static void executeState(int state, SGBA_output_t* output, range_t range,
   if (state == 4) {      
 
     if (range.left < SAFE_DISTANCE) {
-      temp_vel_y = temp_vel_y - MAX_SPEED;
+      temp_vel_y = temp_vel_y - max_speed;
     }
     if (range.right < SAFE_DISTANCE) {
-      temp_vel_y = temp_vel_y + MAX_SPEED;
+      temp_vel_y = temp_vel_y + max_speed;
     }
     if (range.front < SAFE_DISTANCE) {
-      temp_vel_x = temp_vel_x - MAX_SPEED;
+      temp_vel_x = temp_vel_x - max_speed;
     }
     if (range.back < SAFE_DISTANCE) {
-      temp_vel_x = temp_vel_x + MAX_SPEED;
+      temp_vel_x = temp_vel_x + max_speed;
     }
 
   }

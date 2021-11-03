@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "SGBA_utils.h"
+
+
 #include "models.h"
 
 void init_SGBA_controller(SGBA_init_t SGBA_init, point_t initialPos);
