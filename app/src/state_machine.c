@@ -16,9 +16,10 @@ static void executeSGBA(bool outbound);
 
 
 void stateMachineStep(){
-    if(supervisorIsTumbled()){
+    if(supervisorIsTumbled() && state != CRASHED){
         state = CRASHED;
         stateControl.is_on_exploration_mode = false;
+        DEBUG_PRINT("I am crashed \n");
     };
     setNextState();
     executeState();
@@ -36,7 +37,7 @@ static void setNextState(){
             uint8_t multirangerInit = paramGetUint(idMultiranger);
             if(positioningInit && multirangerInit && sensorsData.batteryLevel > BATTERY_LEVEL_THRESHOLD){
                 state = READY;
-                DEBUG_PRINT("drone is ready\n");
+                DEBUG_PRINT("I am ready \n");
             }
             break;
         }
@@ -47,7 +48,7 @@ static void setNextState(){
             }
             if(counter1 >= BATTERY_DEBOUNCE && stateControl.is_on_exploration_mode){
                 state = TAKING_OFF;
-                DEBUG_PRINT("Exploreeeee battery level = %d \n", sensorsData.batteryLevel);
+                DEBUG_PRINT("I will take off = %d \n", sensorsData.batteryLevel);
                 counter1 = 0;
                 storeInitialPos();
             }
@@ -56,7 +57,7 @@ static void setNextState(){
         case TAKING_OFF: 
             if ( sensorsData.position.z > NOMINAL_HEIGHT){
                 state = HOVERING;
-                DEBUG_PRINT("Switched from takingoff to not hovering\n");
+                DEBUG_PRINT("I will start exploration\n");
             } 
             break;
         
@@ -67,7 +68,7 @@ static void setNextState(){
         case LANDING:
             if ( sensorsData.position.z < LAND_THRESHOLD){
                 state = NOT_READY;
-                DEBUG_PRINT("Switched from landing to not ready\n");
+                DEBUG_PRINT("I finished landing\n");
             } 
             break;
 
@@ -78,7 +79,7 @@ static void setNextState(){
             if(counter2 >= BATTERY_DEBOUNCE){
                 state = RETURNING_BASE;
                 stateControl.is_on_exploration_mode = false;
-                DEBUG_PRINT("Switched from exploration to returning base battery level = %d \n", sensorsData.batteryLevel);
+                DEBUG_PRINT("I will return to base battery level = %d \n", sensorsData.batteryLevel);
                 counter2 = 0;
             }
             break;
@@ -86,16 +87,11 @@ static void setNextState(){
         case (RETURNING_BASE):{
             float diffX = sensorsData.position.x - initialPos.x;  
             float diffY = sensorsData.position.y - initialPos.y;
-            float distance = diffX * diffX + diffY * diffY; //+ diffZ * diffZ;
+            float distance = diffX * diffX + diffY * diffY; 
             if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
                 state = LANDING;
-                DEBUG_PRINT("Switched from returning base to landing \n");
+                DEBUG_PRINT("I will land \n");
             }
-
-            // if (getBeaconRSSI() < RSSI_BEACON_THRESHOLD) {
-            //     state = LANDING;
-            //     DEBUG_PRINT("Switched from returning base to landing \n");
-            // }
             break;   
 
         }
@@ -104,7 +100,7 @@ static void setNextState(){
         case CRASHED:
             if(!supervisorIsTumbled()){
                 state = NOT_READY;
-                DEBUG_PRINT("I am not not not crashed \n");
+                DEBUG_PRINT("I am not crashed anymore! \n");
             }
             break; 
         
@@ -139,9 +135,42 @@ static void executeState(){
             hover(&setpoint, NOMINAL_HEIGHT);
             break;
 
-        case EXPLORATION:
-            executeSGBA(true);
+        case (EXPLORATION) : {
+            const range_t range = sensorsData.range;
+            bool reset = false;
+            const float emergency = .1f;
+            
+            float temp_vel_x = 0;
+            float temp_vel_y = 0;
+            const float max_speed = 0.4;
+            if (range.left < emergency) {
+                temp_vel_y = - max_speed;
+                reset = true;
+            }
+            if (range.right < emergency) {
+                temp_vel_y = max_speed;
+                reset = true;
+            }
+            if (range.front < emergency) {
+                temp_vel_x = - max_speed;
+                reset = true;
+            }
+            if (range.back < emergency) {
+                temp_vel_x = max_speed;
+                reset = true;
+            }
+            if(reset){
+                vel_command(&setpoint, temp_vel_x, temp_vel_y, 0, NOMINAL_HEIGHT);
+                initSGBA();
+                DEBUG_PRINT("I have a close obstacle \n");
+            }
+            else {
+                executeSGBA(true);
+            }
+            
             break;
+        }
+            
 
         case RETURNING_BASE:
             executeSGBA(false);
@@ -149,7 +178,7 @@ static void executeState(){
         
         case CRASHED:
             shut_off_engines(&setpoint);
-            DEBUG_PRINT("I am crashed \n");
+            //DEBUG_PRINT("I am crashed \n");
 
             break; 
         
@@ -162,11 +191,7 @@ static void executeState(){
 
 static void executeSGBA(bool outbound){
     SGBA_output_t SGBA_output;
-    int state = callSGBA(&SGBA_output, outbound);
-    if(false){
-        DEBUG_PRINT("SGBA state = %d \n", state);
-    }
-    
+    callSGBA(&SGBA_output, outbound);
     vel_command(&setpoint, SGBA_output.vel_cmd.x, SGBA_output.vel_cmd.y, SGBA_output.vel_cmd.w, NOMINAL_HEIGHT);
     trySendBroadcast();
 }
