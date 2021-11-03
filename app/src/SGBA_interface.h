@@ -14,8 +14,8 @@
 #include "SGBA.h"
 #include "median_filter.h"
 
-#define REF_DISTANCE_WALL 0.7f // m
-#define MAX_SPEED 0.4f // m/s
+#define REF_DISTANCE_WALL 0.4f // m
+#define MAX_SPEED 0.5f // m/s
 
 // RSSI module
 void initRSSI();
