@@ -43,7 +43,7 @@ static void setNextState(){
         }
             
         case READY: // only command start mission to transition to taking off
-            if (sensorsData.batteryLevel >  2 * BATTERY_LEVEL_THRESHOLD){
+            if (sensorsData.batteryLevel >  BATTERY_LEVEL_THRESHOLD){
                 counter1++;
             }
             if(counter1 >= BATTERY_DEBOUNCE && stateControl.is_on_exploration_mode){
@@ -131,7 +131,7 @@ static void executeState(){
             break;
 
         case HOVERING:
-            initSGBA();
+            //initSGBA();
             hover(&setpoint, NOMINAL_HEIGHT);
             break;
 
