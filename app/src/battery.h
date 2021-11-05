@@ -9,5 +9,4 @@ void initBattery();
 float updateBatteryVoltage();
 int getBatteryPercentage();
 
-
 #endif

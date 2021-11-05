@@ -131,7 +131,7 @@ static void executeState(){
             break;
 
         case HOVERING:
-            //initSGBA();
+            initSGBA();
             hover(&setpoint, NOMINAL_HEIGHT);
             break;
 
@@ -178,8 +178,6 @@ static void executeState(){
         
         case CRASHED:
             shut_off_engines(&setpoint);
-            //DEBUG_PRINT("I am crashed \n");
-
             break; 
         
         default:

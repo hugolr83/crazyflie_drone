@@ -17,13 +17,16 @@ void handleCommand(command_t* command){
                 stateControl.is_on_exploration_mode = false;
             }
             break;
+            
         case START_EXPLORATION_CMD:
             if(state == READY) {
                 stateControl.is_on_exploration_mode = true;
             }
             break;
+
         case TAKE_OFF_CMD:
             break;
+
         case RETURN_TO_BASE_CMD:
             if(state == HOVERING){
                 state = LANDING;
@@ -33,6 +36,7 @@ void handleCommand(command_t* command){
                 stateControl.is_on_exploration_mode = false;
             }
             break;
+
         default:
             break;
     }
