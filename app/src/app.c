@@ -71,6 +71,6 @@ void appMain() {
 LOG_GROUP_START(drone)
 LOG_ADD(LOG_UINT8, state, &state)
 LOG_ADD(LOG_FLOAT, batteryFiltered, &sensorsData.voltageFiltered)
-//LOG_ADD(LOG_FLOAT, battery, &sensorsData.voltage)
+LOG_ADD(LOG_UINT8, batteryLevel, &sensorsData.batteryLevel)
 LOG_GROUP_STOP(drone)
 
