@@ -4,14 +4,15 @@
 #include "led_app.h"
 #include "commander_unit.h"
 
+
 typedef struct
 {
-  bool keep_flying;
-  bool outbound;
+  //bool keep_flying;
+  //bool outbound;
   bool is_on_exploration_mode;
-} stateControl_t;
+} state_control_t;
 
-extern stateControl_t stateControl;
+extern state_control_t stateControl;
 
 void handleCommand(command_t* command);
 

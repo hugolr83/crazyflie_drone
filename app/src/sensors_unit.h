@@ -1,27 +1,18 @@
 #ifndef SRC_SENSORSUNIT_H_
 #define SRC_SENSORSUNIT_H_
-#include "stabilizer_types.h"
 #include "estimator_kalman.h"
 #include "range.h"
 #include "battery.h"
 #include <stdlib.h>
-
-
-typedef struct {
-    float front;
-    float back;
-    float left;
-    float right;
-} range_t;
-
-typedef struct {
-    point_t position;
-    range_t range;
-    int batteryLevel;
-} sensorsData_t;
+#include <math.h>
+#include "models.h"
+#include "log.h"
+#include "median_filter.h"
 
 extern sensorsData_t sensorsData;
+extern point_t initialPos;
 
 void updateSensorsData();
+void storeInitialPos();
 
 #endif

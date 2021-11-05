@@ -5,6 +5,8 @@
 #include "debug.h"
 #include "state_control.h"
 #include "commander_unit.h"
+#include "SGBA_interface.h"
+#include "supervisor.h"
 
 typedef enum
 {
@@ -22,5 +24,6 @@ typedef enum
 extern state_fsm_t state;
 
 void stateMachineStep();
+void storeInitialPos();
 
 #endif
