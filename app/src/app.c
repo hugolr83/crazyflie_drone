@@ -38,26 +38,39 @@
 #include "state_control.h"
 #include "communication_unit.h"
 #include "state_machine.h"
+#include "SGBA_interface.h"
 #define STATE_MACHINE_COMMANDER_PRI 3
 
 
 
 void appMain() {
 
+  initRSSI();
+  initBattery();
+  
+  vTaskDelay(M2T(3000));
+  
   while (true) {
+    vTaskDelay(10);
+
     readCommand();
+
     updateSensorsData();
+    updateRSSI();
+    memset(&setpoint, 0, sizeof(setpoint));
+    
     handleCommand(&lastCommand);
     
     stateMachineStep();
 
     commanderSetSetpoint(&setpoint, STATE_MACHINE_COMMANDER_PRI);
-    vTaskDelay(10);
   }  
   
 }
 
 LOG_GROUP_START(drone)
+LOG_ADD(LOG_UINT8, state, &state)
+LOG_ADD(LOG_FLOAT, batteryFiltered, &sensorsData.voltageFiltered)
 LOG_ADD(LOG_UINT8, batteryLevel, &sensorsData.batteryLevel)
 LOG_GROUP_STOP(drone)
 

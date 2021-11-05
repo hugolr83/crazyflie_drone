@@ -1,6 +1,6 @@
 #include "state_control.h"
-
-stateControl_t stateControl;
+#include "state_machine.h"
+state_control_t stateControl;
 
 void handleCommand(command_t* command){
 
@@ -12,18 +12,31 @@ void handleCommand(command_t* command){
             flashLedApp();
             break;
         case LAND_CMD:
-            stateControl.is_on_exploration_mode = false;
-            stateControl.keep_flying = false;
+            if(state == HOVERING || state == EXPLORATION || state == RETURNING_BASE){
+                state = LANDING;
+                stateControl.is_on_exploration_mode = false;
+            }
             break;
+            
         case START_EXPLORATION_CMD:
-            stateControl.is_on_exploration_mode = true;
-            stateControl.keep_flying = true;
+            if(state == READY) {
+                stateControl.is_on_exploration_mode = true;
+            }
             break;
+
         case TAKE_OFF_CMD:
             break;
+
         case RETURN_TO_BASE_CMD:
-            stateControl.is_on_exploration_mode = false;
+            if(state == HOVERING){
+                state = LANDING;
+            }
+            else if(state == EXPLORATION){
+                state = RETURNING_BASE;
+                stateControl.is_on_exploration_mode = false;
+            }
             break;
+
         default:
             break;
     }

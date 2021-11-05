@@ -1,5 +1,12 @@
 #include "battery.h"
 
+static struct MedianFilterFloat medFilt;
+static float voltage;
+
+void initBattery(){
+  init_median_filter_f(&medFilt, 39); 
+}
+
 const float voltageCapacities[] = {
     3.27F, // 0   %
     3.61F, // 5   %
@@ -47,8 +54,16 @@ static int fromVoltageToPercentage(double voltage)
   return charge * batteryLevelIncrement;
 }
 
+float updateBatteryVoltage(){
+  float tmp = pmGetBatteryVoltage();
+  if(supervisorIsFlying()){
+    const float motorThrustAdjustement = 0.36f;
+    tmp += motorThrustAdjustement;
+  }
+  voltage = update_median_filter_f(&medFilt, tmp);
+  return voltage;
+}
 
 int getBatteryPercentage(){
-  double voltage = pmGetBatteryVoltage();
-  return fromVoltageToPercentage(voltage);
+  return fromVoltageToPercentage((double)voltage);
 }
