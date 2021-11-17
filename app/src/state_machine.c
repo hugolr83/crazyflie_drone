@@ -13,6 +13,7 @@ state_fsm_t state = NOT_READY;
 static void setNextState();
 static void executeState();
 static void executeSGBA(bool outbound);
+static bool tryAvoidObstacles(range_t range, velocity2d_t* velocity);
 
 
 void stateMachineStep(){
@@ -26,11 +27,12 @@ void stateMachineStep(){
 }
 
 static void setNextState(){
-    static int counter1 = 0;
-    static int counter2 = 0;
+    static int batteryCounterStart = 0;
+    static int batteryCounterExploration = 0;
     switch (state)
     {
-        case (NOT_READY) : {
+        case (NOT_READY): 
+        {
             paramVarId_t idPositioningDeck = paramGetVarId("deck", "bcFlow2");
             paramVarId_t idMultiranger = paramGetVarId("deck", "bcMultiranger");
             uint8_t positioningInit = paramGetUint(idPositioningDeck);
@@ -42,67 +44,79 @@ static void setNextState(){
             break;
         }
             
-        case READY: // only command start mission to transition to taking off
+        case (READY):
+        { 
             if (sensorsData.batteryLevel >  BATTERY_LEVEL_THRESHOLD){
-                counter1++;
+                batteryCounterStart++;
             }
-            if(counter1 >= BATTERY_DEBOUNCE && stateControl.is_on_exploration_mode){
+            if(batteryCounterStart >= BATTERY_DEBOUNCE && stateControl.is_on_exploration_mode){
                 state = TAKING_OFF;
                 DEBUG_PRINT("I will take off = %d \n", sensorsData.batteryLevel);
-                counter1 = 0;
+                batteryCounterStart = 0;
                 storeInitialPos();
             }
             break;
+        }
 
-        case TAKING_OFF: 
+        case (TAKING_OFF):
+        { 
             if ( sensorsData.position.z > NOMINAL_HEIGHT){
                 state = HOVERING;
                 DEBUG_PRINT("I will start exploration\n");
             } 
             break;
+        }
         
-        case HOVERING: 
+        case (HOVERING):
+        {
             state = EXPLORATION;
             break;
-
-        case LANDING:
+        } 
+            
+        case (LANDING):
+        {
             if ( sensorsData.position.z < LAND_THRESHOLD){
                 state = NOT_READY;
                 DEBUG_PRINT("I finished landing\n");
             } 
             break;
+        }
 
-        case EXPLORATION:
+        case (EXPLORATION): 
+        {
             if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
-                counter2++;
+                batteryCounterExploration++;
             }
-            if(counter2 >= BATTERY_DEBOUNCE){
+            if(batteryCounterExploration >= BATTERY_DEBOUNCE){
                 state = RETURNING_BASE;
                 stateControl.is_on_exploration_mode = false;
                 DEBUG_PRINT("I will return to base battery level = %d \n", sensorsData.batteryLevel);
-                counter2 = 0;
+                batteryCounterExploration = 0;
             }
             break;
+        }
 
-        case (RETURNING_BASE):{
+        case (RETURNING_BASE): 
+        {
             float diffX = sensorsData.position.x - initialPos.x;  
             float diffY = sensorsData.position.y - initialPos.y;
-            float distance = diffX * diffX + diffY * diffY; 
-            if(distance < RETURN_BASE_LAND_DISTANCE * RETURN_BASE_LAND_DISTANCE) {
+            float distance = sqrt(diffX * diffX + diffY * diffY); 
+            if(distance < RETURN_BASE_LAND_DISTANCE) {
                 state = LANDING;
                 DEBUG_PRINT("I will land \n");
             }
             break;   
-
         }
              
-        
-        case CRASHED:
+        case (CRASHED): 
+        {
             if(!supervisorIsTumbled()){
                 state = NOT_READY;
                 DEBUG_PRINT("I am not crashed anymore! \n");
             }
             break; 
+        }
+            
         
         default:
             break;
@@ -134,33 +148,13 @@ static void executeState(){
             initSGBA();
             hover(&setpoint, NOMINAL_HEIGHT);
             break;
+        
+            
 
         case (EXPLORATION) : {
-            const range_t range = sensorsData.range;
-            bool reset = false;
-            const float emergency = .1f;
-            
-            float temp_vel_x = 0;
-            float temp_vel_y = 0;
-            const float max_speed = 0.4;
-            if (range.left < emergency) {
-                temp_vel_y = - max_speed;
-                reset = true;
-            }
-            if (range.right < emergency) {
-                temp_vel_y = max_speed;
-                reset = true;
-            }
-            if (range.front < emergency) {
-                temp_vel_x = - max_speed;
-                reset = true;
-            }
-            if (range.back < emergency) {
-                temp_vel_x = max_speed;
-                reset = true;
-            }
-            if(reset){
-                vel_command(&setpoint, temp_vel_x, temp_vel_y, 0, NOMINAL_HEIGHT);
+            velocity2d_t velocity;
+            if(tryAvoidObstacles(sensorsData.range, &velocity)){
+                vel_command(&setpoint, velocity.x, velocity.y, velocity.w, NOMINAL_HEIGHT);
                 initSGBA();
                 DEBUG_PRINT("I have a close obstacle \n");
             }
@@ -171,7 +165,6 @@ static void executeState(){
             break;
         }
             
-
         case RETURNING_BASE:
             executeSGBA(false);
             break;    
@@ -186,6 +179,34 @@ static void executeState(){
 }
 
 
+static bool tryAvoidObstacles(range_t range, velocity2d_t* velocity){
+    const float emergencyDistance = .1f;
+    
+    velocity->x = .0f;
+    velocity->y = .0f;
+    velocity->w = .0f;
+
+    const bool isLeftObstacle = range.left < emergencyDistance;
+    const bool isRightObstacle = range.right < emergencyDistance;
+    const bool isFrontObstacle = range.front < emergencyDistance;
+    const bool isBackObstacle = range.back < emergencyDistance;
+
+    const float max_speed = 0.4;
+    if (isLeftObstacle) {
+        velocity->y = - max_speed;
+    }
+    if (isRightObstacle) {
+        velocity->y = max_speed;
+    }
+    if (isFrontObstacle) {
+        velocity->x = - max_speed;
+    }
+    if (isBackObstacle) {
+        velocity->x = max_speed;
+    }
+
+    return isLeftObstacle || isRightObstacle || isFrontObstacle || isBackObstacle;
+}
 
 static void executeSGBA(bool outbound){
     SGBA_output_t SGBA_output;

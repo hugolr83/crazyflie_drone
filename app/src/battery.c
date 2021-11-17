@@ -57,7 +57,7 @@ static int fromVoltageToPercentage(double voltage)
 float updateBatteryVoltage(){
   float tmp = pmGetBatteryVoltage();
   if(supervisorIsFlying()){
-    const float motorThrustAdjustement = 0.36f;
+    const float motorThrustAdjustement = 0.36f;// we got this value from our study of crazyflie battery (please see report RR)
     tmp += motorThrustAdjustement;
   }
   voltage = update_median_filter_f(&medFilt, tmp);
