@@ -68,7 +68,7 @@ int32_t find_minimum(uint8_t a[], int32_t n)
   return index;
 }
 
-// TODO: plug preferred orientation
+// TODO: plug preferred orientation here
 SGBA_init_t getSGBAInitParam(int my_id, float refDistanceWall, float maxSpeed) {
   SGBA_init_t initParam =  { .distance_from_wall = refDistanceWall, .max_speed = maxSpeed };
   float wanted_angle = 0;
