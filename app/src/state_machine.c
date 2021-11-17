@@ -13,6 +13,7 @@ state_fsm_t state = NOT_READY;
 static void setNextState();
 static void executeState();
 static void executeSGBA(bool outbound);
+static bool tryAvoidObstacles(range_t range, velocity2d_t* velocity);
 
 
 void stateMachineStep(){
