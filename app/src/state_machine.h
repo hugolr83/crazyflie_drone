@@ -6,6 +6,7 @@
 #include "state_control.h"
 #include "commander_unit.h"
 #include "SGBA_interface.h"
+#include "communication_unit.h"
 #include "supervisor.h"
 
 typedef enum
