@@ -1,4 +1,4 @@
-#include "SGBA_utils.h"
+#include "utils.h"
 
 // Converts degrees to radians.
 #define deg2rad(angleDegrees) (angleDegrees * (float)M_PI / 180.0f)
@@ -52,6 +52,23 @@ uint8_t maxValue(uint8_t myArray[], int size)
 }
 
 int32_t find_minimum(uint8_t a[], int32_t n)
+{
+  int32_t c, min, index;
+
+  min = a[0];
+  index = 0;
+
+  for (c = 1; c < n; c++) {
+    if (a[c] < min) {
+      index = c;
+      min = a[c];
+    }
+  }
+
+  return index;
+}
+
+int32_t find_minimum_f(float a[], int32_t n)
 {
   int32_t c, min, index;
 

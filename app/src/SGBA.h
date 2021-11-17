@@ -9,7 +9,7 @@
 #define SRC_LIB_WALLFOLLOWING_MULTIRANGER_ONBOARD_GRADIENT_BUG_WITH_LOOPING_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "SGBA_utils.h"
+#include "utils.h"
 
 
 #include "models.h"
