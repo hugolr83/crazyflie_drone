@@ -4,6 +4,7 @@
 #include "app_channel.h"
 #include "radiolink.h"
 #include "SGBA_interface.h"
+#include "p2p_led.h"
 
 
 extern command_t lastCommand;

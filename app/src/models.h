@@ -10,6 +10,7 @@ typedef enum {
   START_EXPLORATION_CMD,
   RETURN_TO_BASE_CMD,
   IDENTIFY_CMD,
+  P2P_CM,
   UNKNOWN_CMD,
 } command_t;
 

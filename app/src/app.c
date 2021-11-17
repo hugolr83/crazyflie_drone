@@ -42,6 +42,7 @@
 #include "usec_time.h"
 #include "radiolink.h"
 #include "configblock.h"
+#include "p2p_led.h"
 
 #define STATE_MACHINE_COMMANDER_PRI 3
 
@@ -62,6 +63,8 @@ void appMain() {
     vTaskDelay(10);
 
     readCommand();
+
+    tryFlashLedP2P();
 
     updateSensorsData();
     updateSGBAModule();
