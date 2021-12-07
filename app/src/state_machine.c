@@ -24,6 +24,7 @@ void stateMachineStep(){
     };
     setNextState();
     executeState();
+    trySendBroadcast();
 }
 
 static void setNextState(){
@@ -212,6 +213,5 @@ static void executeSGBA(bool outbound){
     SGBA_output_t SGBA_output;
     callSGBA(&SGBA_output, outbound);
     vel_command(&setpoint, SGBA_output.vel_cmd.x, SGBA_output.vel_cmd.y, SGBA_output.vel_cmd.w, NOMINAL_HEIGHT);
-    trySendBroadcast();
 }
 
