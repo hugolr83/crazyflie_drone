@@ -15,12 +15,12 @@ void readCommand() {
 }
 
 
-void initP2P(int myId){
+void initP2P(uint8_t myId){
     pReply.port=0x00;
     pReply.data[0]=myId;
     pReply.data[1]=.0f;// favorite angle SGBA
     pReply.data[2]=.0f;// distance from start point
-    pReply.size=5;
+    pReply.size=9;
 
     p2pRegisterCB(p2pcallbackHandler);
 }

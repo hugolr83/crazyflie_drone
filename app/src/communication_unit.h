@@ -10,7 +10,7 @@
 extern command_t lastCommand;
 
 void readCommand();
-void initP2P(int myId);
+void initP2P(uint8_t myId);
 
 // radio broadcast module
 void trySendBroadcast();
