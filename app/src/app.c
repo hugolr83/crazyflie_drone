@@ -56,7 +56,8 @@ void appMain() {
   initSGBAModule(myId);
   initP2P(myId);
   initBattery();
-  
+
+  systemWaitStart();
   vTaskDelay(M2T(3000));
   
   while (true) {
