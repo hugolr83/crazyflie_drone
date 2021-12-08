@@ -117,7 +117,6 @@ static void setNextState(){
             }
             break; 
         }
-            
         
         default:
             break;
@@ -148,9 +147,7 @@ static void executeState(){
         case HOVERING:
             initSGBA();
             hover(&setpoint, NOMINAL_HEIGHT);
-            break;
-        
-            
+            break;  
 
         case (EXPLORATION) : {
             velocity2d_t velocity;
