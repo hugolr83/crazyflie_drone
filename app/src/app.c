@@ -43,6 +43,7 @@
 #include "radiolink.h"
 #include "configblock.h"
 #include "p2p_led.h"
+#include "system.h"
 
 #define STATE_MACHINE_COMMANDER_PRI 3
 
