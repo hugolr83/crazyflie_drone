@@ -1,4 +1,4 @@
-#include "SGBA_utils.h"
+#include "utils.h"
 
 // Converts degrees to radians.
 #define deg2rad(angleDegrees) (angleDegrees * (float)M_PI / 180.0f)
@@ -68,7 +68,24 @@ int32_t find_minimum(uint8_t a[], int32_t n)
   return index;
 }
 
-// TODO: plug preferred orientation
+int32_t find_minimum_f(float a[], int32_t n)
+{
+  int32_t c, min, index;
+
+  min = a[0];
+  index = 0;
+
+  for (c = 1; c < n; c++) {
+    if (a[c] < min) {
+      index = c;
+      min = a[c];
+    }
+  }
+
+  return index;
+}
+
+// TODO: plug preferred orientation here
 SGBA_init_t getSGBAInitParam(int my_id, float refDistanceWall, float maxSpeed) {
   SGBA_init_t initParam =  { .distance_from_wall = refDistanceWall, .max_speed = maxSpeed };
   float wanted_angle = 0;

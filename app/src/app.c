@@ -39,15 +39,26 @@
 #include "communication_unit.h"
 #include "state_machine.h"
 #include "SGBA_interface.h"
+#include "usec_time.h"
+#include "radiolink.h"
+#include "configblock.h"
+#include "p2p_led.h"
+#include "system.h"
+
 #define STATE_MACHINE_COMMANDER_PRI 3
 
 
 
 void appMain() {
 
-  initRSSI();
+  uint64_t address = configblockGetRadioAddress();
+  uint8_t myId =(uint8_t)((address) & 0x00000000ff);
+
+  initSGBAModule(myId);
+  initP2P(myId);
   initBattery();
-  
+
+  systemWaitStart();
   vTaskDelay(M2T(3000));
   
   while (true) {
@@ -55,8 +66,10 @@ void appMain() {
 
     readCommand();
 
+    tryFlashLedP2P();
+
     updateSensorsData();
-    updateRSSI();
+    updateSGBAModule();
     memset(&setpoint, 0, sizeof(setpoint));
     
     handleCommand(&lastCommand);
