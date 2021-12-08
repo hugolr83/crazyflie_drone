@@ -9,6 +9,7 @@
 
 
 void startFlashLedP2P();
+bool isStarted();
 void tryFlashLedP2P();
 
 void onPacketP2PReceived_LED(P2PPacket *p);

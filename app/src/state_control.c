@@ -37,7 +37,8 @@ void handleCommand(command_t* command){
             }
             break;
         case P2P_CM:
-            if(state > TAKING_OFF){
+            if(!isStarted()){
+                storeInitialPos();
                 startFlashLedP2P();
             }
             break;
