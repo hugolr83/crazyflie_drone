@@ -36,7 +36,7 @@ void handleCommand(command_t* command){
                 stateControl.is_on_exploration_mode = false;
             }
             break;
-        case P2P_CM:
+        case P2P_CMD:
             if(!isStarted()){
                 storeInitialPos();
                 startFlashLedP2P();
