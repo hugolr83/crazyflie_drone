@@ -85,7 +85,7 @@ static void setNextState(){
 
         case (EXPLORATION): 
         {
-            if (sensorsData.batteryLevel < BATTERY_LEVEL_THRESHOLD){
+            if (sensorsData.batteryLevel <= BATTERY_LEVEL_THRESHOLD){
                 batteryCounterExploration++;
             }
             if(batteryCounterExploration >= BATTERY_DEBOUNCE){
@@ -164,7 +164,14 @@ static void executeState(){
         }
             
         case RETURNING_BASE:
-            executeSGBA(false);
+            // executeSGBA(false);
+            velocity2d_t velocity;
+            if(tryAvoidObstacles(sensorsData.range, &velocity)){
+                vel_command(&setpoint, velocity.x, velocity.y, velocity.w, NOMINAL_HEIGHT);
+                DEBUG_PRINT("I have a close obstacle \n");
+            }else{
+                
+            }
             break;    
         
         case CRASHED:
