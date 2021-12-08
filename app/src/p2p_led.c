@@ -1,9 +1,14 @@
 #include "p2p_led.h"
+#include "debug.h"
 
 static bool started = false;
-static float rssi_distance_array_other_drones[9] = {10000000.0f};
+static float rssi_distance_array_other_drones[9] = {10000.0f, 10000.0f, 10000.0f, 10000.0f, 10000.0f, 10000.0f, 10000.0f, 10000.0f, 10000.0f};
 
 static float getMyDistance();
+
+bool isStarted(){
+    return started;
+}
 
 void startFlashLedP2P(){
     started = true;
@@ -17,9 +22,11 @@ void tryFlashLedP2P(){
     if(myDistance < closestOtherDistance){
         // Turn green
         ledSet(LED_GREEN_L, 1);
+        //DEBUG_PRINT("GREEN myDistance = %f, otherDistance = %f id = %d ! \n", (double) myDistance, (double) closestOtherDistance, id);
     }else{
         // Turn red
         ledSet(LED_RED_L, 1);
+        //DEBUG_PRINT("RED myDistance = %f, otherDistance = %f id = %d ! \n", (double) myDistance, (double) closestOtherDistance, id);
     }
 }
 
