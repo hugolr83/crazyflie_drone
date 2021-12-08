@@ -24,7 +24,6 @@ void stateMachineStep(){
     };
     setNextState();
     executeState();
-    trySendBroadcast();
 }
 
 static void setNextState(){
@@ -159,21 +158,22 @@ static void executeState(){
             else {
                 executeSGBA(true);
             }
-            
+            trySendBroadcast();
             break;
         }
             
-        case RETURNING_BASE:
-            // executeSGBA(false);
+        case (RETURNING_BASE) : {
             velocity2d_t velocity;
             if(tryAvoidObstacles(sensorsData.range, &velocity)){
                 vel_command(&setpoint, velocity.x, velocity.y, velocity.w, NOMINAL_HEIGHT);
                 DEBUG_PRINT("I have a close obstacle \n");
-            }else{
-                
             }
-            break;    
-        
+            else {
+                executeSGBA(false);
+            }
+            break; 
+        }
+               
         case CRASHED:
             shut_off_engines(&setpoint);
             break; 

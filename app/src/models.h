@@ -32,7 +32,6 @@ typedef struct {
     range_t range;
     int batteryLevel;
     float yaw; // rad
-    //float voltage;
     float voltageFiltered;
 } sensorsData_t;
 
@@ -61,7 +60,6 @@ typedef struct {
 } SGBA_output_t;
 
 typedef struct {
-  //uint8_t beacon;
   uint8_t inter;
   float angle_inter;
 } rssi_data_t;

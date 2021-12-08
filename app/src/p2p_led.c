@@ -21,12 +21,10 @@ void tryFlashLedP2P(){
     float myDistance = getMyDistance();
     if(myDistance < closestOtherDistance){
         // Turn green
-        ledSet(LED_GREEN_L, 1);
-        //DEBUG_PRINT("GREEN myDistance = %f, otherDistance = %f id = %d ! \n", (double) myDistance, (double) closestOtherDistance, id);
+        ledSet(LED_GREEN_R, 1);
     }else{
         // Turn red
-        ledSet(LED_RED_L, 1);
-        //DEBUG_PRINT("RED myDistance = %f, otherDistance = %f id = %d ! \n", (double) myDistance, (double) closestOtherDistance, id);
+        ledSet(LED_RED_R, 1);
     }
 }
 

@@ -19,8 +19,8 @@ float state_start_time;
 
 
 //Make variable
-const uint8_t rssi_threshold = 58;// normal batteries 50/52/53/53 bigger batteries 55/57/59
-const uint8_t rssi_collision_threshold = 50; // normal batteris 43/45/45/46 bigger batteries 48/50/52
+const uint8_t rssi_threshold = 53;// normal batteries 50/52/53/53 bigger batteries 55/57/59
+const uint8_t rssi_collision_threshold = 46; // normal batteris 43/45/45/46 bigger batteries 48/50/52
 
 
 
@@ -172,7 +172,7 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
   //ROTATE_TO_GOAL
   if (*state == 2) { 
     // check if heading is close to the preferred_angle
-    bool goal_check = logicIsCloseTo(wraptopi(current_orientation.w - wanted_angle), 0, 0.1f);
+    bool goal_check = logicIsCloseTo(wraptopi(current_orientation.w - wanted_angle), 0, 0.3f);
     if (range.front < ref_distance_from_wall + 0.2f) {
       cannot_go_to_goal =  true;
       wall_follower_init(ref_distance_from_wall, max_speed, 3);
@@ -224,12 +224,9 @@ static void setNextState(float* wanted_angle_dir, orientation2d_t current_orient
 
     // Check if bug went into a looping while wall following,
     //    if so, then forse the reverse direction predical.
-    float rel_x_loop = current_orientation.x - pos_x_hit;   //  diff_rssi = (int)prev_rssi - (int)rssi_beacon;
+    float rel_x_loop = current_orientation.x - pos_x_hit;   
     float rel_y_loop = current_orientation.y - pos_y_hit;
     float loop_angle = wraptopi(atan2(rel_y_loop, rel_x_loop));
-
-    //if(outbound)
-    //{
 
 
     if (fabs(wraptopi(wanted_angle_hit + 3.14f - loop_angle)) < 1.0) {
