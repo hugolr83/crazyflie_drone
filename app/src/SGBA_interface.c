@@ -18,7 +18,7 @@ static bool priority = false;
 // RSSI data received from other drones/beacon
 static uint8_t rssi_array_other_drones[9] = {150, 150, 150, 150, 150, 150, 150, 150, 150};
 static uint64_t time_array_other_drones[9] = {0};
-static float rssi_angle_array_other_drones[9] = {500.0f};
+static float rssi_angle_array_other_drones[9] = {500.0f, 500.0f, 500.0f, 500.0f, 500.0f, 500.0f, 500.0f,500.0f, 500.0f};
 
 // Median filters
 static struct MedianFilterFloat medFilt;
