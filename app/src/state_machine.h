@@ -14,17 +14,17 @@ typedef enum
     NOT_READY = 0,
     READY,
     TAKING_OFF,
+    LANDING,
     HOVERING,
     EXPLORATION,
     RETURNING_BASE,
-    LANDING,
     CRASHED
 } state_fsm_t;
+
 
 
 extern state_fsm_t state;
 
 void stateMachineStep();
-void storeInitialPos();
 
 #endif
